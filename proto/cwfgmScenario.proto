@@ -1,0 +1,361 @@
+syntax = "proto3";
+
+option java_package = "ca.wise.fire.proto";
+option csharp_namespace = "WISE.FireEngineProto";
+option java_multiple_files = true;
+
+import "math.proto";
+import "wtime.proto";
+import "google/protobuf/wrappers.proto";
+import "cwfgmFilter.proto";
+
+package WISE.FireEngineProto;
+
+
+message CwfgmScenario {
+    int32 version = 1;
+
+    HSS.Times.WTime startTime = 2;
+    HSS.Times.WTime endTime = 3;
+    HSS.Times.WTimeSpan displayInterval = 4;
+    FbpOptions fbpOptions = 5;
+    FgmOptions fgmOptions = 6;
+    FmcOptions fmcOptions = 7;
+    FwiOptions fwiOptions = 8;
+    repeated ScenarioFuelPercentile percentiles = 11;
+    optional StopModellingOptions stopOptions = 12;
+
+    message StopModellingOptions {
+        message Threshold {
+            Math.Double threshold = 1;
+            HSS.Times.WTimeSpan duration = 2;
+        }
+        HSS.Times.WTimeSpan ResponseTime = 1;  // guaranteed burn time for the ignition, below settings will be ignored until this expires
+        Threshold FI90Percent = 2;             // 90% of the perimeter must drop below this threshold to stop
+        Threshold FI95Percent = 3;             // 95% of the perimeter must drop below this threshold to stop
+        Threshold FI100Percent = 4;            // 100% of the perimeter must drop below this threshold to stop
+        Threshold RH = 5;                      // RH must be above this threshold to stop (%, not decimal) (measured at each point, may consider spatial wx modelling if turned on)
+        Threshold Precip = 6;                  // this amount of precip must be seen to stop (mm) (this is from the primary wx stream)
+        Math.Double Area = 7;                  // max area for the fire (ha) (not a threshold because area only increases)
+        Math.Double BurnDistance = 8;          // max burn distance for a fire (m) (not a threshold because distance should only increase)
+    }
+
+    message FmcOptions {
+        /**
+         * FMC % override value.
+         */
+        Math.Double perOverride = 1;
+        /**
+         * Default elevation where NODATA or no grid exists.
+         */
+        Math.Double nodataElev = 2;
+        google.protobuf.BoolValue terrain = 3;
+        google.protobuf.BoolValue accurateLocation = 4;
+    }
+
+    message FwiOptions {
+        /**
+         * Apply spatial interpolation to FWI values.
+         */
+        google.protobuf.BoolValue fwiSpacialInterp = 1;
+        /**
+         * Calculate FWI values from temporally interpolated weather.
+         */
+        google.protobuf.BoolValue fwiFromSpacialWeather = 2;
+        /**
+         * Apply history to FWI values affected by patches, grids, etc..
+         */
+        google.protobuf.BoolValue historyOnEffectedFwi = 3;
+        /**
+         * Burning conditions on/off.
+         */
+        google.protobuf.BoolValue burningConditionsOn = 4;
+        /**
+         * Apply temporal interpolation to FWI values.
+         */
+        google.protobuf.BoolValue fwiTemporalInterp = 5;
+    }
+
+    message FbpOptions {
+        /**
+         * Terrain effect on/off.
+         */
+        google.protobuf.BoolValue terrainEffect = 1;
+        /**
+         * Wind effect on/off.
+         */
+        google.protobuf.BoolValue windEffect = 2;
+    }
+
+    message FgmOptions {
+        /**
+         * Maximum time step during acceleration.
+         */
+        HSS.Times.WTimeSpan maxAccelTimestep = 1;
+        /**
+         * Distance resolution.
+         */
+        Math.Double distRes = 2;
+        /**
+         * Perimeter resolution.
+         */
+        Math.Double perimRes = 3;
+        /**
+         * Minimum spreading ROS.
+         */
+        Math.Double minSpreadRos = 4;
+        /**
+         * Whether to stop the fire spread when the simulation fire reaches the boundary of the grid data.
+         */
+        google.protobuf.BoolValue stopAtGridEnd = 5;
+        /**
+         * Whether breaching is turned on or off.
+         */
+        google.protobuf.BoolValue breaching = 6;
+        /**
+         * Whether using the dynamic spatial threshold algorithm is turned on or off.
+         */
+        google.protobuf.BoolValue dynamicSpatialThreshold = 7;
+        /**
+         * Whether the spotting model should be activated.
+         */
+        google.protobuf.BoolValue spotting = 8;
+        /**
+         * Whether internal/hidden time steps are retained.
+         */
+        google.protobuf.BoolValue purgeNonDisplayable = 9;
+        /**
+         * How much to nudge ignitions to perform probabilistic analyses on ignition location.  UTM x dimension.
+         * Primarily used when ignition information is not 100% reliable.
+         */
+        Math.Double dx = 10;
+        /**
+         * How much to nudge ignitions to perform probabilistic analyses on ignition location.  UTM y dimension.
+         * Primarily used when ignition information is not 100% reliable.
+         */
+        Math.Double dy = 11;
+        /**
+         * How much to nudge ignitions to perform probabilistic analyses on ignition location and start time.
+         * Primarily used when ignition information is not 100% reliable.
+         */
+        HSS.Times.WTimeSpan dt = 12;
+        /**
+         * Whether the growth percentile value is applied.
+         */
+        google.protobuf.BoolValue growthPercentileApplied = 13;
+        /**
+         * Growth percentile, to apply to specific fuel types.
+         */
+        Math.Double growthPercentile = 14;
+         /**
+         * The number of vertices to use in the initial polygon created around point ignitions.
+         */
+        google.protobuf.UInt32Value initialVertexCount = 15;
+        /**
+         * The size, in metres, of the initial polygon created around point ignitions.
+         */
+        Math.Double ignitionSize = 16;
+		/**
+		 * Value at which to decimate vector data, expressed in meters.  E.g. 0.001 means all values will be pulled to the nearest millimeter.
+		 */
+		Math.Double gridDecimation = 17 [deprecated = true];
+		/**
+		 * Value at which to enforce a minimum spacing of vertices on a fire perimeters, in meters.  E.g. 0.001 means that no 2 vertices will be closer than 1 millimeter.
+		 */
+		Math.Double perimSpacing = 18;
+        /**
+         * Whether we are using new thresholds for very tight concave corners on the perimeter.
+         */
+        google.protobuf.BoolValue suppressTightConcaveAdd = 19;
+        /**
+         * Whether we are using cardinal (true) or true directions of vertex travel for distance resolution.
+         */
+        google.protobuf.BoolValue useCardinal = 20;
+        /**
+         * Whether we allow fires to work on independent timesteps during a simulation (true), or if they are tied together (false).
+         */
+        google.protobuf.BoolValue independentTimesteps = 21;
+        /**
+         * How much to nudge wind direction to perform probabilistic analyses on weather.
+         * Applied after all patches and grids, and does not recalculate any FWI calculations.
+         * Applied before any FBP calculations.
+         * Provided in compass degrees, -360 to 360 is acceptable.
+         * Applied to both simulations, and to instantaneous calculations as shown on the map trace view query, for consistency.
+         * Primarily used when weather information does not have the expected fidelity.
+         */
+        Math.Double dWD = 22;
+        /**
+         * Create vector breaks out of non-fuels.  These are added in at the start of the simulation and treated as equals to otherwise
+         * standard vector breaks.  It is mutually exclusive to nonfuelsToVectorBreaks.
+         */
+        google.protobuf.BoolValue nonfuelsAsVectorBreaks = 23 [deprecated = true];
+        /**
+         * Find and locate non-fuels inside the fire that aren't surrounded by a perimeter (since a fire won't have burned through
+         * the non-fuel), and build a perimeter around it.  This is done when a fire is introduced, and for each timestep.
+         * It is mutually exclusive to nonfuelsAsVectorBreaks.
+         */
+        google.protobuf.BoolValue nonfuelsToVectorBreaks = 24 [deprecated = true];
+        /**
+         * What to change the wind direction to, to perform probabilistic analyses on weather.
+         * Applied after all patches and grids, and does not recalculate any FWI calculations.
+         * Applied before any FBP calculations.
+         * Provided in compass degrees, 0 to 360 is acceptable.  -1 will be optionally provided as invalid/turned off.
+         * Applied to both simulations, and to instantaneous calculations as shown on the map trace view query, for consistency.
+         */
+        Math.Double oWD = 25;
+        /**
+         * If internal calculations (being polygon point storage) should use the grid's false origin, then turn on this bit.  Initially
+         * intended for experimentation to see what we can do about getting V7 outputs matching V6, thanks to different magnitudes of
+         * values between the 2 versions.
+         */
+         google.protobuf.BoolValue enableFalseOrigin = 26;
+        /**
+         * If internal calculations (being polygon point storage) should use the grid's false scaling (likely from the fuel map), then
+         * turn on this bit.  Initially intended for experimentation to see what we can do about getting V7 outputs matching V6, thanks
+         * to different magnitudes of values between the 2 versions.
+         */
+         google.protobuf.BoolValue enableFalseScaling = 27;
+        /**
+         * Used to calculate grid-based statistics without modelling a fire.  Where-as various inputs will determine the dimensions and
+         * orientation of the ellipse representing fire growth at a location, this value determines the direction of vector growth out
+         * of the defined ellipse.  In this mode, provided FBP equationsa are used.  oVD stands for overrideVectorDirection.
+         * What to define (or change) the vector direction to.
+         * Applied after all patches and grids, and does not recalculate any FWI calculations.
+         * Provided in compass degrees, 0 to 360 is acceptable.  -1 will be optionally provided as invalid/turned off.
+         */
+        Math.Double oVD = 28;
+        /**
+         * Used to calculate grid-based statistics without modelling a fire.  Where-as various inputs will determine the dimensions and
+         * orientation of the ellipse representing fire growth at a location, this value determines the direction of vector growth out
+         * of the defined ellipse.  In this mode, provided FBP equationsa are used.  dVD stands for deltaVectorDirection.
+         * How much to nudge wind direction to perform probabilistic analyses on weather.
+         * Applied after all patches and grids, and does not recalculate any FWI calculations.
+         * Provided in compass degrees, -360 to 360 is acceptable.
+         */
+        Math.Double dVD = 29;
+	}
+
+    message ScenarioFuelPercentile {
+        int32 version = 1;
+
+        string name = 2;
+        Math.Double crown = 3;
+        Math.Double surface = 4;
+    }
+
+    optional string name = 13;	        // not really optional but need to be able to suppress it in the old file format
+    optional string copyName = 14;
+    optional string comments = 15;
+
+    WISE.GridProto.TemporalCondition temporalConditions = 16;
+
+    optional Components components = 17;
+
+    message Components {
+        repeated Reference fireIndex = 1;
+        repeated WeatherIndex weatherIndex = 2;
+        repeated Reference filterIndex = 3;
+        repeated Reference vectorIndex = 4;
+        repeated Reference assetIndex = 5;
+        TargetReference windTarget = 6;
+        TargetReference vectorTarget = 7;
+    }
+
+    IdwExponent idw = 18;
+
+    oneof globalAssetOperationNull {
+        AssetOperation globalAssetOperation = 19;
+    }
+    //the number of assets that can be collided into before a simulation will stop, if valid for the asset operation
+    optional int32 globalCollisionCount = 20;
+
+    message Reference {
+        oneof reference {
+            string name = 1;
+            uint32 index = 2;
+        }
+        optional bool remove = 3;
+
+		oneof options {
+            FilterOptions filterOptions = 4;
+            AssetOptions assetOptions = 5;
+		}
+    }
+
+    message TargetReference {
+        oneof reference {
+            string name = 1;
+            uint32 index = 2;
+        }
+        optional bool remove = 3;
+
+        uint32 geometryIndex = 4;
+        uint32 pointIndex = 5;
+    }
+
+    /**
+     * Options for filters that are being added to scenarios that will be split into sub-scenarios.
+     */
+    message FilterOptions {
+        //Only apply the filter to certain sub-scenarios
+        repeated string subName = 1;
+    }
+
+    /**
+     * Options for an asset refernce to a scenario.
+     */
+    message AssetOptions {
+        oneof operationNull {
+            //The affect the asset will have on the simulation. Will only be used if it is more strict than the global asset operation
+            AssetOperation operation = 1;
+        }
+        //the number of assets that can be collided into before a simulation will stop, if valid for the asset operation
+        optional int32 collisionCount = 2;
+    }
+
+    message WeatherIndex {
+        Reference stationIndex = 1;
+        Reference streamIndex = 2;
+        optional bool isPrimary = 3;
+        //Optional options if the weather streams for this scenarios should be run separately, as sub-scenarios
+        WeatherIndexOptions weatherOptions = 4;
+
+        message WeatherIndexOptions {
+            //A name so this sub-scenario can be referenced in file outputs. If you use the same name for multiple weather references they will be grouped together when sub-scenarios are created
+            //if grouped, only the start and end time of the first reference will be used
+            string subName = 1;
+            //The simulation start time, if absent the scenario start time will be used
+            HSS.Times.WTime startTime = 2;
+            //The simulation end time, if absent, the scenario end time will be used
+            HSS.Times.WTime endTime = 3;
+            //The ignition time, if absent the time that was assigned to the ignition will be used
+            HSS.Times.WTime ignitionTime = 4;
+            //A wind direction that will override every hours wind direction in the weather stream
+            optional Math.Double windDirection = 5;
+            //A wind direction delta that will override every hours wind direction in the weather stream
+            optional Math.Double deltaWindDirection = 6;
+        }
+    }
+
+    message IdwExponent {
+        optional Math.Double temperature = 1;
+        optional Math.Double windSpeed = 2;
+        optional Math.Double precipitation = 3;
+        optional Math.Double fwi = 4;
+    }
+
+    /**
+     * Defines how an asset will affect a simulation.
+     */
+    enum AssetOperation {
+        //Don't allow the assets to affect the simulation, just note arrival times - this is the default
+        NO_EFFECT = 0;
+        //Stop the simulation after it reaches the first asset
+        STOP_IMMEDIATE = 1;
+        //Stop the simulation after it reaches a certain number of assets, defaulting to all of the associated assets
+        STOP_AFTER_X = 2;
+        //Stop the simulation after it reaches all asset gemoetries, regardless of the count
+        STOP_AFTER_ALL = -1;
+    }
+
+}

@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+option java_package = "ca.wise.fire.proto";
+option csharp_namespace = "WISE.FireEngineProto";
+option java_multiple_files = true;
+
+import "wtime.proto";
+import "geography.proto";
+import "google/protobuf/any.proto";
+
+package WISE.FireEngineProto;
+
+
+message CwfgmIgnition {
+    int32 version = 1;
+
+    HSS.Times.WTime startTime = 2;
+    oneof data {
+        IgnitionList ignitions = 3;
+        string filename = 4;
+    }
+
+    //Any attributes to record from the shapefile named in 'filename'.
+    repeated string file_attributes = 5;
+
+    optional string name = 6;        // not really optional but need to be able to suppress it in the old file format
+    optional string comments = 7;
+    optional uint32 color = 8;
+    optional uint32 fillColor = 9;
+    optional uint64 size = 10;
+    optional uint64 symbol = 11;
+    optional bool imported = 12;
+
+    message IgnitionList {
+        repeated IgnitionPoint ignitions = 1;
+    }
+
+    message IgnitionPoint {
+        IgnitionShape polyType = 1;
+        Geography.GeoPoly polygon = 2;
+        //Attributes that were loaded from the original shapefile containing the ignition(s)
+        repeated IgnitionAttribute attributes = 3;
+
+        enum IgnitionShape {
+            UNKNOWN = 0;
+            POINT = 1;
+            LINE = 2;
+            POLYGON_OUT = 3;
+            POLYGON_IN = 4;
+        }
+    }
+
+    /**
+     * An attribute loaded from a shapefile that may be added to any output vector files.
+     */
+    message IgnitionAttribute {
+        //The name of the attribute
+        string name = 1;
+
+        //The value of the attribute
+        google.protobuf.Any value = 2;
+    }
+}
