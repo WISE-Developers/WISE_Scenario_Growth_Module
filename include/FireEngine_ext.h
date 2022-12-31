@@ -1,0 +1,230 @@
+/**
+ * WISE_Scenario_Growth_Module: FireEngine_ext.h
+ * Copyright (C) 2023  WISE
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef __FIREENGINE_EXT_H
+#define __FIREENGINE_EXT_H
+
+//	***** defines for passing to GetStats*() calls
+#define CWFGM_FIRE_STAT_FBP_RSI									10
+#define CWFGM_FIRE_STAT_FBP_ROSEQ								63
+#define CWFGM_FIRE_STAT_FBP_ROS									11
+#define CWFGM_FIRE_STAT_FBP_BROS								12
+#define CWFGM_FIRE_STAT_FBP_FROS								13
+#define CWFGM_FIRE_STAT_FMC										39
+#define CWFGM_FIRE_STAT_RAZ										14
+#define CWFGM_FIRE_STAT_ROS										15
+#define CWFGM_FIRE_STAT_CFB										16
+#define CWFGM_FIRE_STAT_CFC										17
+#define CWFGM_FIRE_STAT_SFC										18
+#define CWFGM_FIRE_STAT_TFC										19
+#define CWFGM_FIRE_STAT_FI										26
+#define CWFGM_FIRE_STAT_HFI										43
+#define CWFGM_FIRE_STAT_HCFB									44
+#define CWFGM_FIRE_STAT_FLAMELENGTH								41
+#define CWFGM_FIRE_STAT_ACTIVE_PERIMETER						20
+#define CWFGM_FIRE_STAT_AREA									21
+#define CWFGM_FIRE_STAT_ACTIVE_PERIMETER_CHANGE					22
+#define CWFGM_FIRE_STAT_ACTIVE_PERIMETER_GROWTH					23
+#define CWFGM_FIRE_STAT_AREA_CHANGE								24
+#define CWFGM_FIRE_STAT_AREA_GROWTH								25
+#define CWFGM_FIRE_STAT_ACTIVE									27
+#define CWFGM_FIRE_STAT_BURNED									47
+#define CWFGM_FIRE_STAT_BURNED_CHANGE							49
+#define CWFGM_FIRE_STAT_TOTAL_FUEL_CONSUMED						48
+#define CWFGM_FIRE_STAT_SURFACE_FUEL_CONSUMED					70
+#define CWFGM_FIRE_STAT_CROWN_FUEL_CONSUMED						71
+#define CWFGM_FIRE_STAT_RADIATIVE_POWER							72
+#define CWFGM_FIRE_STAT_ASSET_FIRST_ARRVIAL_TIME				73
+#define CWFGM_FIRE_STAT_ASSET_FIRST_ARRVIAL_SECS				75
+#define CWFGM_FIRE_STAT_ASSET_ARRIVAL_COUNT						74
+#define CWFGM_FIRE_STAT_FINAL_PERIMETER							76
+#define CWFGM_FIRE_STAT_ROSVECTOR								77
+#define CWFGM_FIRE_STAT_DIRECTIONVECTOR							78
+#define CWFGM_FIRE_STAT_EXTERIOR_PERIMETER						28
+#define CWFGM_FIRE_STAT_EXTERIOR_PERIMETER_CHANGE				29
+#define CWFGM_FIRE_STAT_EXTERIOR_PERIMETER_GROWTH				30
+#define CWFGM_FIRE_STAT_MAXIMUM_BURN_DISTANCE					42
+#define CWFGM_FIRE_STAT_NUM_ACTIVE_POINTS						31
+#define CWFGM_FIRE_STAT_CUMULATIVE_NUM_ACTIVE_POINTS			60
+#define CWFGM_FIRE_STAT_NUM_POINTS								32
+#define CWFGM_FIRE_STAT_CUMULATIVE_NUM_POINTS					36
+#define CWFGM_FIRE_STAT_NUM_ACTIVE_FRONTS						33
+#define CWFGM_FIRE_STAT_NUM_FRONTS								34
+#define CWFGM_FIRE_STAT_TIMESTEP_DURATION_SECS					35
+#define CWFGM_FIRE_STAT_TIMESTEP_TICKS							37
+#define CWFGM_FIRE_STAT_TIMESTEP_CUMULATIVE_TICKS				38
+#define CWFGM_FIRE_STAT_DATETIME								52
+#define CWFGM_FIRE_STAT_DATE									53
+#define CWFGM_FIRE_STAT_TIME									54
+#define CWFGM_FIRE_STAT_SUNRISE									79
+#define CWFGM_FIRE_STAT_SUNSET									80
+#define CWFGM_FIRE_STAT_SOLARNOON								81
+#define CWFGM_FIRE_STAT_SUNRISE_CENTROID_X						82
+#define CWFGM_FIRE_STAT_SUNRISE_CENTROID_Y						83
+#define CWFGM_FIRE_STAT_ENTRY_TIME								68
+#define CWFGM_FIRE_STAT_EXIT_TIME								69
+#define CWFGM_FIRE_STAT_TOTAL_PERIMETER							55
+#define CWFGM_FIRE_STAT_TOTAL_PERIMETER_CHANGE					56
+#define CWFGM_FIRE_STAT_TOTAL_PERIMETER_GROWTH					57
+#define CWFGM_FIRE_STAT_TIMESTEP_REALTIME						58
+#define CWFGM_FIRE_STAT_TIMESTEP_CUMULATIVE_REALTIME			59
+#define CWFGM_FIRE_STAT_TIMESTEP_CUMULATIVE_BURNING_SECS		61
+#define CWFGM_FIRE_STAT_TIMESTEP_MEMORY_BEGIN_USED				64
+#define CWFGM_FIRE_STAT_TIMESTEP_MEMORY_END_USED				65
+#define CWFGM_FIRE_STAT_IGNITION_LATITUDE						66
+#define CWFGM_FIRE_STAT_IGNITION_LONGITUDE						67
+#define CWFGM_FIRE_STAT_SIMULATION_STATUS						84
+#define CWFGM_FIRE_STAT_NUM_TIMESTEPS										100	// number of timesteps, cumulative, to the current time (inclusive)
+#define CWFGM_FIRE_STAT_NUM_DISPLAY_TIMESTEPS								101	// number of display timesteps, cumulative, to the current time (inclusive)
+#define CWFGM_FIRE_STAT_NUM_EVENT_TIMESTEPS									102	// number of event timesteps, cumulative, to the current time (inclusive)
+#define CWFGM_FIRE_STAT_NUM_CALC_TIMESTEPS									103	// number of timesteps that are not displayable and not an event, to the current time (inclusive)
+#define CWFGM_FIRE_STAT_NUM_UNTANGLER_INVOCATIONS							104
+#define CWFGM_FIRE_STAT_NUM_UNTANGLER_INTERSECTIONS							105
+#define CWFGM_FIRE_STAT_NUM_UNTANGLER_UNIQUE_INTERSECTIONS					106
+#define CWFGM_FIRE_STAT_NUM_UNTANGLER_FUDGED_INTERSECTIONS					107
+#define CWFGM_FIRE_STAT_NUM_UNTANGLER_NEW_VERTEX_INTERSECTIONS				108
+#define CWFGM_FIRE_STAT_NUM_UNTANGLER_POLYGON_START_COUNT					109
+#define CWFGM_FIRE_STAT_NUM_UNTANGLER_POLYGON_LOGIC_REMOVED					110
+#define CWFGM_FIRE_STAT_NUM_UNTANGLER_POLYGON_TRIVIAL_REMOVED				111
+#define CWFGM_FIRE_STAT_NUM_UNTANGLER_POLYGON_RETAINED						112
+#define CWFGM_FIRE_STAT_NUM_UNTANGLER_TICKS									113
+#define CWFGM_FIRE_STAT_CUMULATIVE_UNTANGLER_INVOCATIONS					114
+#define CWFGM_FIRE_STAT_CUMULATIVE_UNTANGLER_INTERSECTIONS					115
+#define CWFGM_FIRE_STAT_CUMULATIVE_UNTANGLER_UNIQUE_INTERSECTIONS			116
+#define CWFGM_FIRE_STAT_CUMULATIVE_UNTANGLER_FUDGED_INTERSECTIONS			117
+#define CWFGM_FIRE_STAT_CUMULATIVE_UNTANGLER_NEW_VERTEX_INTERSECTIONS		118
+#define CWFGM_FIRE_STAT_CUMULATIVE_UNTANGLER_POLYGON_START_COUNT			119
+#define CWFGM_FIRE_STAT_CUMULATIVE_UNTANGLER_POLYGON_LOGIC_REMOVED			120
+#define CWFGM_FIRE_STAT_CUMULATIVE_UNTANGLER_POLYGON_TRIVIAL_REMOVED		121
+#define CWFGM_FIRE_STAT_CUMULATIVE_UNTANGLER_POLYGON_RETAINED				122
+#define CWFGM_FIRE_STAT_CUMULATIVE_UNTANGLER_TICKS							123
+#define CWFGM_FIRE_STAT_NUM_POLYSET_INVOCATIONS								124
+#define CWFGM_FIRE_STAT_NUM_POLYSET_INTERSECTIONS							125
+#define CWFGM_FIRE_STAT_NUM_POLYSET_UNIQUE_INTERSECTIONS					126
+#define CWFGM_FIRE_STAT_NUM_POLYSET_FUDGED_INTERSECTIONS					127
+#define CWFGM_FIRE_STAT_NUM_POLYSET_NEW_VERTEX_INTERSECTIONS				128
+#define CWFGM_FIRE_STAT_NUM_POLYSET_POLYGON_START_COUNT						129
+#define CWFGM_FIRE_STAT_NUM_POLYSET_POLYGON_LOGIC_REMOVED					130
+#define CWFGM_FIRE_STAT_NUM_POLYSET_POLYGON_TRIVIAL_REMOVED					131
+#define CWFGM_FIRE_STAT_NUM_POLYSET_POLYGON_RETAINED						132
+#define CWFGM_FIRE_STAT_NUM_POLYSET_TICKS									133
+#define CWFGM_FIRE_STAT_CUMULATIVE_POLYSET_INVOCATIONS						134
+#define CWFGM_FIRE_STAT_CUMULATIVE_POLYSET_INTERSECTIONS					135
+#define CWFGM_FIRE_STAT_CUMULATIVE_POLYSET_UNIQUE_INTERSECTIONS				136
+#define CWFGM_FIRE_STAT_CUMULATIVE_POLYSET_FUDGED_INTERSECTIONS				137
+#define CWFGM_FIRE_STAT_CUMULATIVE_POLYSET_NEW_VERTEX_INTERSECTIONS			138
+#define CWFGM_FIRE_STAT_CUMULATIVE_POLYSET_POLYGON_START_COUNT				139
+#define CWFGM_FIRE_STAT_CUMULATIVE_POLYSET_POLYGON_LOGIC_REMOVED			140
+#define CWFGM_FIRE_STAT_CUMULATIVE_POLYSET_POLYGON_TRIVIAL_REMOVED			141
+#define CWFGM_FIRE_STAT_CUMULATIVE_POLYSET_POLYGON_RETAINED					142
+#define CWFGM_FIRE_STAT_CUMULATIVE_POLYSET_TICKS							143
+
+
+//	***** defines to set and get the type of fire ignition
+#define CWFGM_FIRE_IGNITION_UNDEFINED		0
+#define CWFGM_FIRE_IGNITION_POINT			100
+#define CWFGM_FIRE_IGNITION_LINE			200
+#define CWFGM_FIRE_IGNITION_POLYGON_OUT		300	// used to be called CWFGM_FIRE_IGNITION_POLYGON - was introduced as redundant to other #defines that already existed
+#define CWFGM_FIRE_IGNITION_POLYGON_IN		400
+
+//	***** defines to set and get different settings for a scenario
+#define CWFGM_SCENARIO_OPTION_ACCEL					1
+#define CWFGM_SCENARIO_OPTION_BUI					2
+#define CWFGM_SCENARIO_OPTION_TOPOGRAPHY			3	// used for whether to apply slope calculations in FBP calc's
+#define CWFGM_SCENARIO_OPTION_GREENUP				4
+#define CWFGM_SCENARIO_OPTION_GRASSPHENOLOGY		0
+#define CWFGM_SCENARIO_OPTION_FMC_TERRAIN			6	// used only for whether or not to apply elevation to calculation of FMC
+#define CWFGM_SCENARIO_OPTION_PERIMETER_RESOLUTION	87
+#define CWFGM_SCENARIO_OPTION_PERIMETER_SPACING		89
+#define CWFGM_SCENARIO_OPTION_SPATIAL_THRESHOLD		40
+#define CWFGM_SCENARIO_OPTION_SPATIAL_THRESHOLD_DYNAMIC	30
+#define CWFGM_SCENARIO_OPTION_MINIMUM_SPREADING_ROS	62	// minimum ROS (in m/min, default is 1mm/min) that can support fire growth - less than this and a given vertex will be stopped
+#define CWFGM_SCENARIO_OPTION_SPECIFIED_FMC		41	// scenario-specific provided value for FMC to use in the scenarios (means never calculating FMC as per the FBP standard)
+#define CWFGM_SCENARIO_OPTION_SPECIFIED_FMC_ACTIVE	25
+#define CWFGM_SCENARIO_OPTION_DEFAULT_ELEVATION		42	// scenario-specific elevation to use when we have to calculate FMC, but the elevation grid either doesn't exist or has
+								// NODATA where we are asked for it
+#define CWFGM_SCENARIO_OPTION_WIND			10
+#define CWFGM_SCENARIO_OPTION_SINGLETHREADING		11
+#define CWFGM_SCENARIO_OPTION_EXTINGUISHMENT		12
+#define CWFGM_SCENARIO_OPTION_USE_2DGROWTH		13	// used to select the 2-d elliptical growth model (default 3-d)
+#define CWFGM_SCENARIO_OPTION_BOUNDARY_STOP		14	// stop when hitting boundary.
+#define CWFGM_SCENARIO_OPTION_MULTITHREADING		49
+#define CWFGM_SCENARIO_OPTION_SPOTTING			8	// was 26, changed to fit into a 2-byte short
+#define CWFGM_SCENARIO_OPTION_BREACHING			9	// was 27, changed to fit into a 2-byte short
+#define CWFGM_SCENARIO_OPTION_IGNITION_START_TIME_OVERRIDE	90
+#define CWFGM_SCENARIO_OPTION_START_TIME		44
+#define CWFGM_SCENARIO_OPTION_END_TIME			45
+#define CWFGM_SCENARIO_OPTION_CURRENT_TIME		46
+#define CWFGM_SCENARIO_OPTION_TEMPORAL_THRESHOLD_ACCEL	51
+#define CWFGM_SCENARIO_OPTION_DISPLAY_INTERVAL		48
+#define CWFGM_SCENARIO_OPTION_IGNITION_SIZE		43
+#define CWFGM_SCENARIO_OPTION_WEATHER_INTERPOLATE_TEMPORAL 17
+#define CWFGM_SCENARIO_OPTION_WEATHER_INTERPOLATE_SPATIAL 18
+#define CWFGM_SCENARIO_OPTION_ACCURATE_FMC_LOCATION	19	// this is by default ON now (and really only BurnP3 could turn this off) - and this specifies to
+								// calculate lat, lon from the vertex (x, y) location instead of just the grid's lower left-hand corner
+#define CWFGM_SCENARIO_OPTION_CACHE_GRID_POINTS		28	// for BurnP3 to tell FireEngine that we want to keep track of the closest point per grid to make life faster
+#define CWFGM_SCENARIO_OPTION_WEATHER_INTERPOLATE_PRECIP 21	// whether to apply voronoi regions to weather stations to determine local data
+#define CWFGM_SCENARIO_OPTION_WEATHER_INTERPOLATE_WIND	22	// whether to apply voronoi regions to weather stations to determine wind data
+#define CWFGM_SCENARIO_OPTION_WEATHER_INTERPOLATE_WIND_VECTOR	27	// if CWFGM_SCENARIO_OPTION_WEATHER_INTERPOLATE_WIND is on, then if this bit is on, then the approach defined in http://colaweb.gmu.edu/dev/clim301/lectures/wind/wind-uv.html will be used
+#define CWFGM_SCENARIO_OPTION_SUPPRESS_TIGHT_CONCAVE_ADDPOINT	26	// if this bit is set, then we limit the sine curve to '1' when considering adding points to a convex portion of the hull
+#define CWFGM_SCENARIO_OPTION_FORCE_AFFINITY 31				// force threads to specific affinities
+#define CWFGM_SCENARIO_OPTION_WEATHER_INTERPOLATE_TEMP_RH 29	// whether to calculate spatially explicit temp, dew point, and RH values
+#define CWFGM_SCENARIO_OPTION_WEATHER_INTERPOLATE_CALCFWI 24	// whether to apply spatial calc's to FWI (TRUE) or simply apply IDW to FWI values
+#define CWFGM_SCENARIO_OPTION_WEATHER_INTERPOLATE_HISTORY 23	// whether to apply cumulative effects of weather patches, etc. to FWI values (only valid with
+								// CWFGM_SCENARIO_OPTION_WEATHER_INTERPOLATE_SPATIAL on)
+#define CWFGM_SCENARIO_OPTION_WEATHER_QUERY_PRIMARY_STREAM 25	// consistent with CWFGM_GETEVENTTIME_QUERY_PRIMARY_WX_STREAM
+#define CWFGM_SCENARIO_OPTION_WEATHER_QUERY_ANY_STREAM	26	// consistent with CWFGM_GETEVENTTIME_QUERY_ANY_WX_STREAM
+#define CWFGM_SCENARIO_OPTION_WEATHER_ALTERNATE_CACHE	31	// whether to use the simulation (std) or interactive (alternate) cache for spatial interp. calc's
+#define CWFGM_SCENARIO_OPTION_WEATHER_IGNORE_CACHE		30 // if we're just exporting a full grid of exports, we'll never get a cache hit so no point in trying
+#define CWFGM_SCENARIO_OPTION_PURGE_NONDISPLAYABLE	16	// whether to clear non-displayable time steps, to save on memory overhead
+#define CWFGM_SCENARIO_OPTION_GRID_DECIMATION		88	// whether to pull grid points to a specific grid
+#define CWFGM_SCENARIO_OPTION_FALSE_ORIGIN			33	// whether or not to apply the grid's (original) false origin to FireEngine calc's
+#define CWFGM_SCENARIO_OPTION_FALSE_SCALING			34	// whether or not to apply the grid's fuel scaling to FireEngine calc's
+#define CWFGM_SCENARIO_OPTION_CARDINAL_ROS	7			// whether to use fastest ROS in a cardinal direction as opposed to direction of travel of vertex
+#define CWFGM_SCENARIO_OPTION_INDEPENDENT_TIMESTEPS	5	// whether to allow fires to grow at independent time steps in a simulation
+
+#define CWFGM_SCENARIO_OPTION_IGNITIONS_DX				2050
+#define CWFGM_SCENARIO_OPTION_IGNITIONS_DY				2051
+#define CWFGM_SCENARIO_OPTION_IGNITIONS_DT				2052
+#define CWFGM_SCENARIO_OPTION_IGNITIONS_PERCENTILE		2053
+#define CWFGM_SCENARIO_OPTION_IGNITIONS_DWD				2054
+#define CWFGM_SCENARIO_OPTION_IGNITIONS_OWD				2055
+#define CWFGM_SCENARIO_OPTION_GRID_DVD					2100
+#define CWFGM_SCENARIO_OPTION_GRID_OVD					2101
+#define CWFGM_SCENARIO_OPTION_IGNITIONS_PERCENTILE_ENABLE	20
+
+#define SCENARIO_XYSTAT_TECHNIQUE_CLOSEST_VERTEX		21234
+#define SCENARIO_XYSTAT_TECHNIQUE_IDW					21235
+#define SCENARIO_XYSTAT_TECHNIQUE_AREA_WEIGHTING		21236
+#define SCENARIO_XYSTAT_TECHNIQUE_VORONOI_OVERLAP		21237
+#define SCENARIO_XYSTAT_TECHNIQUE_CALCULATE				21238
+#define SCENARIO_XYSTAT_TECHNIQUE_DISCRETIZE			21239
+
+#define SCENARIO_EXPORT_SUBSET_ACTIVE					0x0001
+#define SCENARIO_EXPORT_SUBSET_EXTERIOR					0x0002
+#define SCENARIO_EXPORT_COMBINE_SET						0x0004
+
+#define CWFGM_SCENARIO_OPTION_EXPORTRULE_TEXTPROPERTY			22000
+#define CWFGM_SCENARIO_OPTION_EXPORTRULE_STATPROPERTY			22001
+#define CWFGM_SCENARIO_OPTION_EXPORTRULE_OPERATION_APPEND		22002
+#define CWFGM_SCENARIO_OPTION_EXPORTRULE_OPERATION_EXPORT		22003
+#define CWFGM_SCENARIO_OPTION_EXPORTRULE_DOUBLEPROPERTY			22004
+#define CWFGM_SCENARIO_OPTION_EXPORTRULE_INT32PROPERTY			22005
+#define CWFGM_SCENARIO_OPTION_EXPORTRULE_INT64PROPERTY			22006
+
+#endif
