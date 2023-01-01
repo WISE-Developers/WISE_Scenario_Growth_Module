@@ -1,0 +1,11 @@
+/x64
+/Debug
+/dlldata.c
+/FireEngine.h
+/FireEngine.idl.ts
+/FireEngine.tlb
+/FireEngine_i.c
+/FireEngine_p.c
+/Release
+*.bak
+*.user
