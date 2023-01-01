@@ -178,8 +178,6 @@ struct growVoxelIterator {
 	growVoxelParms<_type> gvp;
 };
 
-#endif
-
 template<class _type>
 struct growPointStruct {
 	FirePoint<_type> *fp;

@@ -22,7 +22,7 @@
 #pragma managed(push, off)
 #endif
 
-#include "FuelCom.h"
+#include "FuelConfig.h"
 #include "hssconfig/config.h"
 #include <vector>
 
