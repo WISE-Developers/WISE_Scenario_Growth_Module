@@ -24,7 +24,6 @@
 
 #include "angles.h"
 #include <cpl_string.h>
-#include "resource.h"
 #include "scenario.h"
 #include "ScenarioTimeStep.h"
 #include "results.h"

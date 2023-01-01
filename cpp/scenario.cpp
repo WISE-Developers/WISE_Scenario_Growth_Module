@@ -26,7 +26,6 @@
 #endif
 
 #include <cpl_string.h>
-#include "resource.h"
 #include "scenario.h"
 #include "ScenarioTimeStep.h"
 #include "results.h"
@@ -44,7 +43,6 @@
 #define BOOST_CHRONO_HEADER_ONLY
 #endif
 #include "boost_ll_config.h"
-#undef BOOST_ALL_NO_LIB
 #include <boost/chrono.hpp>
 
 #ifdef _MSC_VER
