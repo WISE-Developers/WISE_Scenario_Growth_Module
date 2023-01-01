@@ -1602,7 +1602,8 @@ void ScenarioTimeStep<_type>::addPoint(const XYPointType &loc, bool &valid, XYPo
 template<class _type>
 struct stepRescan {
 	FireFront<_type>* VOLATILE ff;
-	CCriticalSection m_lock;
+
+	CThreadSemaphore m_lock;
 	_type epsilon;
 };
 

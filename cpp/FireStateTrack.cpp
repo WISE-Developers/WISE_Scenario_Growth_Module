@@ -526,7 +526,8 @@ void FireFront<_type>::trackPointVector(const FirePoint<_type> *actual_fp, FireP
 						m_nf_entry = node->intersection_();
 					}
 
-					m_nf_acc += node->intersection.DistanceTo(nn->intersection);
+					XYPointType i0(node->intersection_()), i1(nn->intersection_());
+					m_nf_acc += i0.DistanceTo(i1);
 
 					if (m_nf_acc > (fl * 1.5 * svs->grid_per_meter)) {
 						if (svs->use_lock)
@@ -557,7 +558,8 @@ void FireFront<_type>::trackPointVector(const FirePoint<_type> *actual_fp, FireP
 						}
 					}
 
-					m_acc += node->intersection.DistanceTo(nn->intersection);
+					XYPointType i0(node->intersection_()), i1(nn->intersection_());
+					m_acc += i0.DistanceTo(i1);
 
 					if (m_acc >= m_orig_max)			// if we're done then we're done
 						break;
