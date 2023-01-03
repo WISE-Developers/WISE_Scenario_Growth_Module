@@ -302,7 +302,7 @@ CCWFGM_Scenario *CCWFGM_Scenario::deserialize(const google::protobuf::Message& p
 			/// </summary>
 			/// <type>internal</type>
 			valid->add_child_validation("WISE.FireEngineProto.CwfgmScenario", name, validation::error_level::SEVERE, validation::id::object_invalid, proto.GetDescriptor()->name());
-		weak_assert(0);
+		weak_assert(false);
 		throw ISerializeProto::DeserializeError("WISE.FireEngineProto.CwfgmScenario: Protobuf object invalid", ERROR_PROTOBUF_OBJECT_INVALID);
 	}
 	if ((scenario->version() < 1) || (scenario->version() > 6))
@@ -313,7 +313,7 @@ CCWFGM_Scenario *CCWFGM_Scenario::deserialize(const google::protobuf::Message& p
 			/// </summary>
 			/// <type>user</type>
 			valid->add_child_validation("WISE.FireEngineProto.CwfgmScenario", name, validation::error_level::SEVERE, validation::id::version_mismatch, std::to_string(scenario->version()));
-		weak_assert(0);
+		weak_assert(false);
 		throw ISerializeProto::DeserializeError("WISE.FireEngineProto.CwfgmScenario: Version is invalid", ERROR_PROTOBUF_OBJECT_VERSION_INVALID);
 	}
 	if (scenario->version() < 6) {
@@ -569,7 +569,7 @@ CCWFGM_Scenario *CCWFGM_Scenario::deserialize(const google::protobuf::Message& p
 
 			if ((dValue < -250.0) || (dValue > 250.0)) { 
 				m_loadWarning = "Error: WISE.FireEngineProto.CwfgmScenario: Invalid dx value";
-				weak_assert(0);
+				weak_assert(false);
 				if (v2)
 					/// <summary>
 					/// The scenario's dx value must be <= +-250m, inclusive.
@@ -586,7 +586,7 @@ CCWFGM_Scenario *CCWFGM_Scenario::deserialize(const google::protobuf::Message& p
 
 			if ((dValue < -250.0) || (dValue > 250.0)) {
 				m_loadWarning = "CWFGM_Scenario: Invalid dy value";
-				weak_assert(0);
+				weak_assert(false);
 				if (v2)
 					/// <summary>
 					/// The scenario's dy value must be <= +-250m, inclusive.
@@ -635,7 +635,7 @@ CCWFGM_Scenario *CCWFGM_Scenario::deserialize(const google::protobuf::Message& p
 
 			if ((dValue < -360.0) || (dValue > 360.0)) {
 				m_loadWarning = "Error: WISE.FireEngineProto.CwfgmScenario: Invalid dWD value";
-				weak_assert(0);
+				weak_assert(false);
 				if (v2)
 					/// <summary>
 					/// The scenario's dwd value must be <= +-360.0, inclusive.
@@ -654,7 +654,7 @@ CCWFGM_Scenario *CCWFGM_Scenario::deserialize(const google::protobuf::Message& p
 			if (((dValue != -1.0) && (dValue < 0.0)) || (dValue > 360.0))
 			{
 				m_loadWarning = "Error: WISE.FireEngineProto.CwfgmScenario: Invalid oWD value";
-				weak_assert(0);
+				weak_assert(false);
 				if (v2)
 					/// <summary>
 					/// The scenario's owd value must be <= +-360.0, inclusive.
@@ -673,7 +673,7 @@ CCWFGM_Scenario *CCWFGM_Scenario::deserialize(const google::protobuf::Message& p
 			if ((dValue < -360.0) || (dValue > 360.0))
 			{
 				m_loadWarning = "Error: WISE.FireEngineProto.CwfgmScenario: Invalid dWD value";
-				weak_assert(0);
+				weak_assert(false);
 				if (v2)
 					/// <summary>
 					/// The scenario's dvd value must be <= +-360.0, inclusive.
@@ -692,7 +692,7 @@ CCWFGM_Scenario *CCWFGM_Scenario::deserialize(const google::protobuf::Message& p
 			if (((dValue != -1.0) && (dValue < 0.0)) || (dValue > 360.0))
 			{
 				m_loadWarning = "Error: WISE.FireEngineProto.CwfgmScenario: Invalid oVD value";
-				weak_assert(0);
+				weak_assert(false);
 				if (v2)
 					/// <summary>
 					/// The scenario's ovd value must be <= +-360.0, inclusive.
@@ -814,7 +814,7 @@ CCWFGM_Scenario *CCWFGM_Scenario::deserialize(const google::protobuf::Message& p
 			if (dValue < 0.0) if ((dValue != -99.0) && (dValue != -1.0))
 			{
 				m_loadWarning = "Error: WISE.FireEngineProto.CwfgmScenario: Invalid default elevation value";
-				weak_assert(0);
+				weak_assert(false);
 				if (v2)
 					/// <summary>
 					/// The scenario's elevation value for NODATA value is invalid.
@@ -826,7 +826,7 @@ CCWFGM_Scenario *CCWFGM_Scenario::deserialize(const google::protobuf::Message& p
 			if (dValue > 7000.0)
 			{
 				m_loadWarning = "Error: WISE.FireEngineProto.CwfgmScenario: Invalid default elevation value";
-				weak_assert(0);
+				weak_assert(false);
 				if (v2)
 					/// <summary>
 					/// The scenario's elevation value for NODATA value is invalid.
@@ -849,7 +849,7 @@ CCWFGM_Scenario *CCWFGM_Scenario::deserialize(const google::protobuf::Message& p
 			if ((dValue < 0.0) && (dValue != -1.0))
 			{
 				m_loadWarning = "Error: WISE.FireEngineProto.CwfgmScenario: Invalid specified FMC value";
-				weak_assert(0);
+				weak_assert(false);
 				if (v2)
 					/// <summary>
 					/// The scenario's override FMC value is invalid.
@@ -864,7 +864,7 @@ CCWFGM_Scenario *CCWFGM_Scenario::deserialize(const google::protobuf::Message& p
 			else if (dValue > 300.0)
 			{
 				m_loadWarning = "Error: WISE.FireEngineProto.CwfgmScenario: Invalid specified FMC value";
-				weak_assert(0);
+				weak_assert(false);
 				if (v2)
 					/// <summary>
 					/// The scenario's override FMC value is invalid.
@@ -982,7 +982,7 @@ CCWFGM_Scenario *CCWFGM_Scenario::deserialize(const google::protobuf::Message& p
 
 			if (m_sc.responseTime < WTimeSpan(0)) {
 				m_loadWarning = "Error: WISE.FireEngineProto.CwfgmScenario.StopModellingOptions.responseTime: Invalid value";
-				weak_assert(0);
+				weak_assert(false);
 				if (v2)
 					/// <summary>
 					/// The response time must be >= 0.
@@ -1013,7 +1013,7 @@ CCWFGM_Scenario *CCWFGM_Scenario::deserialize(const google::protobuf::Message& p
 
 			if ((m_sc.fi100PercentThreshold < 0.0) || (m_sc.fi100PercentThreshold > 20000.0)) {
 				m_loadWarning = "Error: WISE.FireEngineProto.CwfgmScenario.StopModellingOptions.fi100Percent: Invalid threshold value";
-				weak_assert(0);
+				weak_assert(false);
 				if (v2)
 					/// <summary>
 					/// The scenario's dvd value must be <= +-360.0, inclusive.
@@ -1028,7 +1028,7 @@ CCWFGM_Scenario *CCWFGM_Scenario::deserialize(const google::protobuf::Message& p
 
 			if (m_sc.fi100PercentDuration < WTimeSpan(0)) {
 				m_loadWarning = "Error: WISE.FireEngineProto.CwfgmScenario.StopModellingOptions.fi100Percent: Invalid threshold value";
-				weak_assert(0);
+				weak_assert(false);
 				if (v2)
 					/// <summary>
 					/// The scenario's dvd value must be <= +-360.0, inclusive.
@@ -1059,7 +1059,7 @@ CCWFGM_Scenario *CCWFGM_Scenario::deserialize(const google::protobuf::Message& p
 
 			if ((m_sc.fi95PercentThreshold < 0.0) || (m_sc.fi95PercentThreshold > 20000.0)) {
 				m_loadWarning = "Error: WISE.FireEngineProto.CwfgmScenario.StopModellingOptions.fi95Percent: Invalid threshold value";
-				weak_assert(0);
+				weak_assert(false);
 				if (v2)
 					/// <summary>
 					/// The scenario's dvd value must be <= +-360.0, inclusive.
@@ -1074,7 +1074,7 @@ CCWFGM_Scenario *CCWFGM_Scenario::deserialize(const google::protobuf::Message& p
 
 			if (m_sc.fi95PercentDuration <= WTimeSpan(0)) {
 				m_loadWarning = "Error: WISE.FireEngineProto.CwfgmScenario.StopModellingOptions.fi95Percent: Invalid threshold value";
-				weak_assert(0);
+				weak_assert(false);
 				if (v2)
 					/// <summary>
 					/// The scenario's dvd value must be <= +-360.0, inclusive.
@@ -1105,7 +1105,7 @@ CCWFGM_Scenario *CCWFGM_Scenario::deserialize(const google::protobuf::Message& p
 
 			if ((m_sc.fi90PercentThreshold < 0.0) || (m_sc.fi90PercentThreshold > 20000.0)) {
 				m_loadWarning = "Error: WISE.FireEngineProto.CwfgmScenario.StopModellingOptions.fi90Percent: Invalid threshold value";
-				weak_assert(0);
+				weak_assert(false);
 				if (v2)
 					/// <summary>
 					/// The scenario's dvd value must be <= +-360.0, inclusive.
@@ -1120,7 +1120,7 @@ CCWFGM_Scenario *CCWFGM_Scenario::deserialize(const google::protobuf::Message& p
 
 			if (m_sc.fi90PercentDuration <= WTimeSpan(0)) {
 				m_loadWarning = "Error: WISE.FireEngineProto.CwfgmScenario.StopModellingOptions.fi90Percent: Invalid threshold value";
-				weak_assert(0);
+				weak_assert(false);
 				if (v2)
 					/// <summary>
 					/// The scenario's dvd value must be <= +-360.0, inclusive.
@@ -1151,7 +1151,7 @@ CCWFGM_Scenario *CCWFGM_Scenario::deserialize(const google::protobuf::Message& p
 
 			if ((m_sc.PrecipThreshold < 0.0) || (m_sc.PrecipThreshold > 200.0)) {
 				m_loadWarning = "Error: WISE.FireEngineProto.CwfgmScenario.StopModellingOptions.Precip: Invalid threshold value";
-				weak_assert(0);
+				weak_assert(false);
 				if (v2)
 					/// <summary>
 					/// The scenario's dvd value must be <= +-360.0, inclusive.
@@ -1166,7 +1166,7 @@ CCWFGM_Scenario *CCWFGM_Scenario::deserialize(const google::protobuf::Message& p
 
 			if (m_sc.PrecipDuration <= WTimeSpan(0)) {
 				m_loadWarning = "Error: WISE.FireEngineProto.CwfgmScenario.StopModellingOptions.Precip: Invalid threshold value";
-				weak_assert(0);
+				weak_assert(false);
 				if (v2)
 					/// <summary>
 					/// The scenario's dvd value must be <= +-360.0, inclusive.
@@ -1196,7 +1196,7 @@ CCWFGM_Scenario *CCWFGM_Scenario::deserialize(const google::protobuf::Message& p
 
 			if ((m_sc.RHThreshold < 0.0) || (m_sc.RHThreshold > 100.0)) {
 				m_loadWarning = "Error: WISE.FireEngineProto.CwfgmScenario.StopModellingOptions.RH: Invalid threshold value";
-				weak_assert(0);
+				weak_assert(false);
 				if (v2)
 					/// <summary>
 					/// The scenario's dvd value must be <= +-360.0, inclusive.
@@ -1212,7 +1212,7 @@ CCWFGM_Scenario *CCWFGM_Scenario::deserialize(const google::protobuf::Message& p
 
 			if (m_sc.RHDuration <= WTimeSpan(0)) {
 				m_loadWarning = "Error: WISE.FireEngineProto.CwfgmScenario.StopModellingOptions.RH: Invalid threshold value";
-				weak_assert(0);
+				weak_assert(false);
 				if (v2)
 					/// <summary>
 					/// The scenario's dvd value must be <= +-360.0, inclusive.

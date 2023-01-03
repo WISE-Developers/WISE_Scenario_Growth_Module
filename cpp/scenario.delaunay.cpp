@@ -819,7 +819,7 @@ RESTART:
 										goto RESTART;
 									for (std::uint16_t i = 0; i < stat_cnt; i++)
 										vstats[i] = 0.0;
-									weak_assert(0);
+									weak_assert(false);
 									return ERROR_POINT_NOT_IN_FIRE;
 								}
 

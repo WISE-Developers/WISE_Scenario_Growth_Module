@@ -260,7 +260,7 @@ void FirePoint<_type>::Grow(const growVoxelParms<_type> *gvs, ICWFGM_Fuel *fuel)
 
 			hr = fuel->FMC(latitude, longitude, elev, (std::uint16_t)sts->m_time.GetDayOfYear(WTIME_FORMAT_AS_LOCAL | WTIME_FORMAT_WITHDST), &overrides, &fmc);
 		} else {					// in Prometheus, this case shouldn't happen any more
-			weak_assert(0);
+			weak_assert(false);
 			hr = fuel->FMC(latitude, longitude, -99.0, (std::uint16_t)sts->m_time.GetDayOfYear(WTIME_FORMAT_AS_LOCAL | WTIME_FORMAT_WITHDST), &overrides, &fmc);
 		}
 	}
@@ -576,7 +576,7 @@ void ScenarioTimeStep<_type>::StatsFires() {
 	else
 		queue_up = QUEUE_UP >> 1;
 
-	if ((total_num_points > queue_up) && (m_scenario->m_pool)) {
+	if (total_num_points > queue_up) && (m_scenario->m_pool) {
 		growVoxelIterator<_type> gvs;
 		gvs.gvp.self_fire_timestep = this;
 		Centroid(&gvs.gvp.centroid);

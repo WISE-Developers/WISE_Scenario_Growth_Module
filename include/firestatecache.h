@@ -47,15 +47,6 @@ protected:
 	using XYPointType = XY_PointTempl<_type>;
 	using XYRectangleType = XY_RectangleTempl<_type>;
 
-	struct ClosestPoint {
-	    public:
-		FirePoint<_type>	*m_fp;
-		FireFront<_type>	*m_ff;
-		std::uint64_t		m_time;
-	};
-
-	ClosestPoint			*m_cpArray;
-
 protected:
 	std::uint16_t			m_plot_X, m_plot_Y;
 

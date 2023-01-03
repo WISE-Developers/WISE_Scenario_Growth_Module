@@ -34,7 +34,6 @@
 template<class _type>
 ScenarioGridCache<_type>::ScenarioGridCache(CCWFGM_Scenario *scenario, const XY_Point &start_ll, const XY_Point& start_ur, const _type resolution /*, const std::uint16_t plot_X, const std::uint16_t plot_Y*/)
     : m_scenario(scenario), m_ll(start_ll), m_ur(start_ur), m_resolution(resolution) /*, m_plot_X(plot_X), m_plot_Y(plot_Y)*/ {
-	m_cpArray = nullptr;
 	m_resolution2 = m_resolution * m_resolution;
 	m_resolution3 = m_resolution * m_resolution2;
 	m_iresolution = 1.0 / m_resolution;
@@ -58,9 +57,6 @@ bool ScenarioGridCache<_type>::allocCPArray() {
 
 template<class _type>
 ScenarioGridCache<_type>::~ScenarioGridCache() {
-	if (m_cpArray) {
-		free(m_cpArray);
-	}
 }
 
 
@@ -74,15 +70,6 @@ void ScenarioGridCache<_type>::Size(const XYPointType &ll, const XYPointType &ur
 		m_plot_Y = (std::uint16_t)(dims.y * m_iresolution);
 		return;
 	}
-	if (m_cpArray) {
-		if (ll.Equals(m_ll) && ur.Equals(m_ur)) {
-			return;
-		}
-	}
-	if (!m_cpArray)
-		grid_create(ll, ur);
-	else
-		grid_resize(ll, ur);
 }
 
 
@@ -93,16 +80,6 @@ void ScenarioGridCache<_type>::grid_create(const XYPointType &ll, const XYPointT
 	XYPointType dims = ur - ll;
 	m_plot_X = (std::uint16_t)(dims.x * m_iresolution);
 	m_plot_Y = (std::uint16_t)(dims.y * m_iresolution);
-
-	try {
-		std::uint32_t size = (std::uint32_t)m_plot_X * (std::uint32_t)m_plot_Y;
-		size_t allocsize = ((size_t)size) * sizeof(ClosestPoint);
-		m_cpArray = (ClosestPoint *)malloc(allocsize);
-		if (m_cpArray)
-			memset(m_cpArray, 0, allocsize);
-	} catch (std::bad_alloc &e) {
-		m_cpArray = nullptr;
-	}
 }
 
 
@@ -138,32 +115,6 @@ void ScenarioGridCache<_type>::grid_resize(const XYPointType &_ll, const XYPoint
 	if ((m_plot_X == plot_X) && (m_plot_Y == plot_Y))
 		if (m_ll.Equals(ll) && (m_ur.Equals(ur)))
 			return;						// bounding box grew larger but not enough to require a larger grid cache
-
-	ClosestPoint *cpArray = nullptr;
-	try {
-		std::uint32_t size = (std::uint32_t)plot_X * (std::uint32_t)plot_Y;
-		size_t allocsize = ((size_t)size) * sizeof(ClosestPoint);
-		cpArray = (ClosestPoint *)malloc(allocsize);
-		if (cpArray)
-			memset(cpArray, 0, allocsize);
-		else
-			return;
-	} catch (std::bad_alloc &) {
-		return;
-	}
-
-	for (std::uint16_t x = off_x; x < (off_x + m_plot_X); x++) {
-		for (std::uint16_t y = off_y; y < (off_y + m_plot_Y); y++) {
-			std::uint32_t old_index = arrayIndex(x - off_x, y - off_y);
-			std::uint32_t new_index = y * plot_X + x;
-			cpArray[new_index] = m_cpArray[old_index];
-		}
-	}
-
-	// ********************************* need to grow the static vector grids too, around non-fuels
-
-	free(m_cpArray);
-	m_cpArray = cpArray;
 
 	m_plot_X = plot_X;
 	m_plot_Y = plot_Y;
@@ -610,7 +561,7 @@ void ScenarioGridCache<_type>::RecordTimeStep(ScenarioTimeStep<_type> *sts1) {
 					FirePoint<_type>* closest = sts->GetNearestPoint(pt, true, &closest_ff, true);
 
 					if (!closest) {				// so, this will occur and will loop back until we find an appropriate closest point - shouldn't matter if the timestep includes all ScenarioFire's or not
-						weak_assert(0);				// shouldn't occur due to the continue statement/test above
+						weak_assert(false);				// shouldn't occur due to the continue statement/test above
 						sts = sts->LN_Pred();
 						if (sts->LN_Pred())
 							goto AGAIN;
@@ -807,7 +758,7 @@ ScenarioCache<_type>::ScenarioCache(CCWFGM_Scenario* scenario, const XY_Point &s
 	PolymorphicAttribute var;
 	if (SUCCEEDED(hr = m_scenario->m_gridEngine->GetAttribute(m_scenario->m_layerThread, CWFGM_GRID_ATTRIBUTE_SPATIALREFERENCE, &var))) {
 		std::string projection;
-		try { projection = std::get<std::string>(var); } catch (std::bad_variant_access &) { weak_assert(0); return; };
+		try { projection = std::get<std::string>(var); } catch (std::bad_variant_access &) { weak_assert(false); return; };
 
 		m_coordinateConverter.SetSourceProjection(projection.c_str());
 	}
@@ -1307,14 +1258,14 @@ bool ScenarioCache<_type>::CanBurnTime(const WTime &dateTime, const XYPointType 
 		(time_valid != grid::AttributeValue::NOT_SET)) {
 		std::int64_t s_time;
 		if (!(variantToInt64(time, &s_time))) {
-			weak_assert(0);
+			weak_assert(false);
 			return false;
 		}
 		if (SUCCEEDED(hr = m_scenario->m_gridEngine->GetAttributeData(m_scenario->m_layerThread, centroid, dateTime, WTimeSpan(0), CWFGM_GRID_ATTRIBUTE_BURNINGCONDITION_PERIOD_END_COMPUTED, 0, &time, &time_valid, nullptr)) &&
 			(time_valid != grid::AttributeValue::NOT_SET)) {
 			std::int64_t e_time;
 			if (!(variantToInt64(time, &e_time))) {
-				weak_assert(0);
+				weak_assert(false);
 				return false;
 			}
 			start = WTimeSpan(s_time);
