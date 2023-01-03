@@ -32,3 +32,4 @@ template class ScenarioTimeStep<fireengine_float_type>;
 template class ScenarioGridCache<fireengine_float_type>;
 template struct growVoxelIterator<fireengine_float_type>;
 template class ScenarioFireExport<fireengine_float_type>;
+template class GustingOptions<fireengine_float_type>;

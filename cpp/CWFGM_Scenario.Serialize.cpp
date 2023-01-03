@@ -264,6 +264,8 @@ WISE::FireEngineProto::CwfgmScenario* CCWFGM_Scenario::serialize(const Serialize
 		scenario->set_allocated_stopoptions(stop);
 	}
 
+	scenario->set_allocated_gustingoptions(m_impl->m_go.serialize(options));
+
 	scenario->set_allocated_starttime(HSS_Time::Serialization::TimeSerializer().serializeTime(m_startTime, options.fileVersion()));
 	scenario->set_allocated_endtime(HSS_Time::Serialization::TimeSerializer().serializeTime(m_endTime, options.fileVersion()));
 	scenario->set_allocated_displayinterval(HSS_Time::Serialization::TimeSerializer().serializeTimeSpan(m_displayInterval));
@@ -1267,6 +1269,13 @@ CCWFGM_Scenario *CCWFGM_Scenario::deserialize(const google::protobuf::Message& p
 				m_sc.burnDistance = false;
 			}
 		}
+	}
+
+	if (scenario->has_gustingoptions()) {
+		auto vt2 = validation::conditional_make_object(v, "WISE.FireEngineProto.CwfgmScenario.Gusting", "gustingOptions");
+		auto v2 = vt2.lock();
+
+		m_impl->m_go.deserialize(scenario->gustingoptions(), v2, "gustingOptions");
 	}
 
 	weak_assert(m_optionFlags & (1ull << CWFGM_SCENARIO_OPTION_FMC_TERRAIN));

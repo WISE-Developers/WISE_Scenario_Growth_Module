@@ -50,10 +50,11 @@ find_package(Boost COMPONENTS atomic chrono system iostreams REQUIRED PATHS ${BO
 else ()
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
 
-find_package(Boost COMPONENTS chrono system iostreams REQUIRED PATHS ${BOOST_LIBRARY_DIR})
+set(Boost_LIBRARIES
+    -L${BOOST_LIBRARY_DIR}/lib
+    -lboost_system
+    -lboost_iostreams)
 endif (MSVC)
-
-message(WARNING ${Boost_LIBRARIES})
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_NO_MFC")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG -DDEBUG")
@@ -79,6 +80,7 @@ add_library(fireengine SHARED
     cpp/FireStateSmooth.cpp
     cpp/firestatestats.cpp
     cpp/FireStateTrack.cpp
+    cpp/GustingOptions.cpp
     cpp/Percentile.cpp
     cpp/scenario.cpp
     cpp/scenario.delaunay.cpp
@@ -105,7 +107,7 @@ target_include_directories(fireengine
     PUBLIC ${GRID_INCLUDE_DIR}
     PUBLIC ${REDAPP_INCLUDE_DIR}
     PUBLIC ${THIRD_PARTY_INCLUDE_DIR}
-    PUBLIC ${Boost_INCLUDE_DIRS}
+    PUBLIC ${BOOST_INCLUDE_DIR}
     PUBLIC ${GSL_INCLUDE_DIR}
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
 )

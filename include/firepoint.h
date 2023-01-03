@@ -85,7 +85,7 @@ public:
 	HRESULT RetrieveStat(const std::uint16_t stat, double &s) const;
 	HRESULT RetrieveAttribute(const std::uint16_t stat, const uint32_t units, GDALVariant& a) const;
 
-	void Grow(struct vertex_shared *vs, std::uint32_t *vs_cnt, const growVoxelParms<_type> *gvs, ICWFGM_Fuel *fuel);
+	void Grow(const growVoxelParms<_type> *gvs, ICWFGM_Fuel *fuel);
 
 private:
 
