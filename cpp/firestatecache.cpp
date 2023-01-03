@@ -1185,7 +1185,7 @@ void ScenarioCache<_type>::buildAssets() {
 
 
 template<class _type>
-bool ScenarioCache<_type>::CanBurn(const WTime &datetime, const XYPointType& centroid, const XYPointType &pt, const double rh, const double ws, const double fwi, const double isi) {
+bool ScenarioCache<_type>::CanBurn(const WTime &datetime, const XYPointType& centroid, const XYPointType &pt, const double rh, const double WindSpeed, const double fwi, const double isi) {
 	WTimeSpan dayportion = datetime.GetTimeOfDay(WTIME_FORMAT_AS_LOCAL | WTIME_FORMAT_WITHDST);
 	WTimeSpan start, end;
 	if (!CanBurnTime(datetime, centroid, start, end))
@@ -1235,7 +1235,7 @@ bool ScenarioCache<_type>::CanBurn(const WTime &datetime, const XYPointType& cen
 	if (SUCCEEDED(hr = m_scenario->m_gridEngine->GetAttributeData(m_scenario->m_layerThread, _pt, datetime, WTimeSpan(0), CWFGM_GRID_ATTRIBUTE_BURNINGCONDITION_MAX_WS, 0, &value, &value_valid, nullptr)) && (value_valid != grid::AttributeValue::NOT_SET)) {
 		double max_ws;
 		if (variantToDouble(value, &max_ws)) {
-			if (ws < max_ws)
+			if (WindSpeed < max_ws)
 				return false;
 		}
 	}

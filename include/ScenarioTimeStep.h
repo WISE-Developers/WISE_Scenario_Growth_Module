@@ -70,6 +70,7 @@ public:									// one polygon defining (part of) a specific fire - so all fire 
 	std::uint32_t				m_newVertexStatus;
 	std::uint32_t				m_canBurn : 1,
 								m_bits;
+	double						m_gusting;
 
 	virtual FireFront<_type>*New() const override;
 	virtual FireFront<_type>*NewCopy(const XYPolyLLType&toCopy) const override;

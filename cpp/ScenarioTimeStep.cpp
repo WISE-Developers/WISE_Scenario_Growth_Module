@@ -50,6 +50,7 @@ ScenarioFire<_type>::ScenarioFire(const ScenarioTimeStep<_type> *timeStep, const
 	m_initArea = 0.0;
 	m_newVertexStatus = FP_FLAG_NORMAL;
 	m_canBurn = 1;
+	m_gusting = 0.0;
 
 	if (m_timeStep)
 		if (!(m_timeStep->m_scenario->m_scenario->m_optionFlags & (1ull << CWFGM_SCENARIO_OPTION_FALSE_SCALING)))
@@ -158,6 +159,8 @@ ScenarioTimeStep<_type>::ScenarioTimeStep(Scenario<_type> *scenario, const WTime
 		an->m_asset->GetEventTime(CWFGM_GETEVENTTIME_FLAG_SEARCH_FORWARD, step_start, &secs);
 		an = an->LN_Succ();
 	}						// this takes care of any vector data that may want to change (in the future)
+
+	m_scenario->m_scenario->m_impl->m_go.GetEventTime(m_scenario, CWFGM_GETEVENTTIME_FLAG_SEARCH_FORWARD, step_start, &secs);
 
 	m_time = secs;
 	if (t_time != m_time) {
@@ -734,6 +737,7 @@ bool ScenarioTimeStep<_type>::AdvanceFires() {					// copies fires from the prev
 		// to adjust from m/min to grid/sec - ROS is returned in m/min and we need to
 		// adjust that to "cell-size" (1/resolution)/sec to go from ROS to our
 		// ellipse A, B, C
+		sf->m_gusting = m_scenario->m_scenario->m_impl->m_go.AssignPercentGusting(sf, m_time);
 		advanced |= sf->AdvanceFire(scale);
 		sf = sf->LN_Succ();
 	}
