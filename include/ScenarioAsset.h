@@ -53,8 +53,8 @@ protected:
 
 public:
 	AssetGeometryNode(WTimeManager* timeManager) : m_arrivalTime((ULONGLONG)0, timeManager) { m_arrived = false; m_closestFirePoint = nullptr; m_closestFireFront = nullptr; }
-	__INLINE AssetGeometryNode* LN_Succ() const { return (AssetGeometryNode*)MinNode::LN_Succ(); };
-	__INLINE AssetGeometryNode* LN_Pred() const { return (AssetGeometryNode*)MinNode::LN_Pred(); };
+	AssetGeometryNode* LN_Succ() const { return (AssetGeometryNode*)MinNode::LN_Succ(); };
+	AssetGeometryNode* LN_Pred() const { return (AssetGeometryNode*)MinNode::LN_Pred(); };
 
 	XYPolyLLType						m_geometry;			// one of the geometry's from m_asset below, look at member variable to indicate point, line polygon
 	WTime								m_arrivalTime;		// when the fire reaches this geomtry
@@ -84,8 +84,8 @@ class AssetNode : public MinNode {
     public:
 	AssetNode();
 	~AssetNode();
-	__INLINE AssetNode* LN_Succ() const { return (AssetNode*)MinNode::LN_Succ(); };
-	__INLINE AssetNode* LN_Pred() const { return (AssetNode*)MinNode::LN_Pred(); };
+	AssetNode* LN_Succ() const { return (AssetNode*)MinNode::LN_Succ(); };
+	AssetNode* LN_Pred() const { return (AssetNode*)MinNode::LN_Pred(); };
 
 	boost::intrusive_ptr<ICWFGM_Asset>	m_asset;			// original COM object
 	std::uint32_t						m_operation;		// possible values include:

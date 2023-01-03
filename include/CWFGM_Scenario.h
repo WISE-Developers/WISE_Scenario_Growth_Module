@@ -49,8 +49,8 @@ using namespace HSS_Time;
 #ifndef DOXYGEN_IGNORE_CODE
 class VectorEngineNode : public MinNode {
     public:
-	__INLINE VectorEngineNode* LN_Succ() const	{ return (VectorEngineNode*)MinNode::LN_Succ(); };
-	__INLINE VectorEngineNode* LN_Pred() const	{ return (VectorEngineNode*)MinNode::LN_Pred(); };
+	VectorEngineNode* LN_Succ() const	{ return (VectorEngineNode*)MinNode::LN_Succ(); };
+	VectorEngineNode* LN_Pred() const	{ return (VectorEngineNode*)MinNode::LN_Pred(); };
 
 	boost::intrusive_ptr<ICWFGM_VectorEngine>		m_vectorEngine;
 };
@@ -82,8 +82,8 @@ public:
 	CriticalPathPointData() = default;
 	CriticalPathPointData(const CriticalPathPointData& c);
 
-	__INLINE CriticalPathPointData* LN_Succ() const { return (CriticalPathPointData*)XY_PolyNodeAttribute<double>::LN_Succ(); }
-	__INLINE CriticalPathPointData* LN_Pred() const { return (CriticalPathPointData*)XY_PolyNodeAttribute<double>::LN_Pred(); }
+	CriticalPathPointData* LN_Succ() const { return (CriticalPathPointData*)XY_PolyNodeAttribute<double>::LN_Succ(); }
+	CriticalPathPointData* LN_Pred() const { return (CriticalPathPointData*)XY_PolyNodeAttribute<double>::LN_Pred(); }
 
 	DECLARE_OBJECT_CACHE_MT(CriticalPathPointData, CriticalPathPointData)
 };
@@ -99,8 +99,8 @@ public:
 	virtual CriticalPathPointData* NewCopy(const XY_PolyLLNode<double>& toCopy) const override;
 	virtual void Delete(XY_PolyLLNode<double>* c) const override;
 
-	__INLINE CriticalPathPoint* LN_Succ() const { return (CriticalPathPoint*)XY_PolyLLAttributes::LN_Succ(); }
-	__INLINE CriticalPathPoint* LN_Pred() const { return (CriticalPathPoint*)XY_PolyLLAttributes::LN_Pred(); }
+	CriticalPathPoint* LN_Succ() const { return (CriticalPathPoint*)XY_PolyLLAttributes::LN_Succ(); }
+	CriticalPathPoint* LN_Pred() const { return (CriticalPathPoint*)XY_PolyLLAttributes::LN_Pred(); }
 
 	DECLARE_OBJECT_CACHE_MT(CriticalPathPoint, CriticalPathPoint)
 };
@@ -112,8 +112,8 @@ public:
 	CriticalPath(const CriticalPath& toCopy);
 	virtual ~CriticalPath() override;
 
-	__INLINE CriticalPath* LN_Succ() const { return (CriticalPath*)MinNode::LN_Succ(); }
-	__INLINE CriticalPath* LN_Pred() const { return (CriticalPath*)MinNode::LN_Pred(); }
+	CriticalPath* LN_Succ() const { return (CriticalPath*)MinNode::LN_Succ(); }
+	CriticalPath* LN_Pred() const { return (CriticalPath*)MinNode::LN_Pred(); }
 
 	virtual CriticalPathPoint* New() const override;
 	virtual CriticalPathPoint* NewCopy(const XY_PolyLL_BaseTempl<double>& c) const override;

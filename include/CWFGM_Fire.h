@@ -40,8 +40,8 @@ public:
 	Ignition(const Ignition &toCopy);
 	~Ignition();
 
-	__INLINE Ignition *LN_Succ() const { return (Ignition *)MinNode::LN_Succ(); };
-	__INLINE Ignition *LN_Pred() const { return (Ignition *)MinNode::LN_Pred(); };
+	Ignition *LN_Succ() const { return (Ignition *)MinNode::LN_Succ(); };
+	Ignition *LN_Pred() const { return (Ignition *)MinNode::LN_Pred(); };
 
 	XY_Poly						*m_ignition;
 	std::uint16_t				m_ignitionPolyType;

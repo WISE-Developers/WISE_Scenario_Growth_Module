@@ -34,8 +34,8 @@ public:
 	ActiveFire();
 	ActiveFire(ActiveFire<_type>* master);
 
-	__INLINE ActiveFire<_type> *LN_Succ() const { return (ActiveFire<_type>*)MinNode::LN_Succ(); };
-	__INLINE ActiveFire<_type> *LN_Pred() const { return (ActiveFire<_type>*)MinNode::LN_Pred(); };
+	ActiveFire<_type> *LN_Succ() const { return (ActiveFire<_type>*)MinNode::LN_Succ(); };
+	ActiveFire<_type> *LN_Pred() const { return (ActiveFire<_type>*)MinNode::LN_Pred(); };
 
 	ActiveFire<_type> *m_mate_next, *m_mate_prev;
 	ActiveFire<_type> *m_master;
