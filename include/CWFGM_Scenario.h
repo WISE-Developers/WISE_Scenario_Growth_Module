@@ -35,6 +35,7 @@
 #include "FireEngine.h"
 #include "ScenarioIgnition.h"
 #include "Percentile.h"
+#include "GustingOptions.h"
 #include "cwfgmScenario.pb.h"
 #include "hss_propagate_const.h"
 
@@ -148,6 +149,7 @@ public:
 	template<typename T> friend class ScenarioTimeStep;
 	template<typename T> friend class ScenarioCache;
 	template<typename T> friend class Scenario;
+	template<typename T> friend class FirePoint;
 public:
 	CCWFGM_Scenario();
 	CCWFGM_Scenario(const CCWFGM_Scenario &toCopy);

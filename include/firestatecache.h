@@ -258,7 +258,7 @@ protected:
 public:
 	void InitThreadPool(bool multithread);
 
-	bool CanBurn(const WTime &datetime, const XYPointType &centroid, const XYPointType &pt, const double rh, const double ws, const double fwi, const double isi);
+	bool CanBurn(const WTime &datetime, const XYPointType &centroid, const XYPointType &pt, const double rh, const double WindSpeed, const double fwi, const double isi);
 	bool CanBurn(const WTime &datetime, const XYPointType& centroid);
 	bool CanBurnTime(const WTime &dateTime, const XYPointType &centroid, WTimeSpan &start, WTimeSpan &end);
 

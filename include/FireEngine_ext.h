@@ -89,6 +89,7 @@
 #define CWFGM_FIRE_STAT_IGNITION_LATITUDE						66
 #define CWFGM_FIRE_STAT_IGNITION_LONGITUDE						67
 #define CWFGM_FIRE_STAT_SIMULATION_STATUS						84
+#define CWFGM_FIRE_STAT_GUSTING									85
 #define CWFGM_FIRE_STAT_NUM_TIMESTEPS										100	// number of timesteps, cumulative, to the current time (inclusive)
 #define CWFGM_FIRE_STAT_NUM_DISPLAY_TIMESTEPS								101	// number of display timesteps, cumulative, to the current time (inclusive)
 #define CWFGM_FIRE_STAT_NUM_EVENT_TIMESTEPS									102	// number of event timesteps, cumulative, to the current time (inclusive)

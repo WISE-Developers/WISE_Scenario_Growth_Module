@@ -269,6 +269,32 @@ message CwfgmScenario {
     //the number of assets that can be collided into before a simulation will stop, if valid for the asset operation
     optional int32 globalCollisionCount = 20;
 
+    optional GustingOptions gustingOptions = 21;
+
+    message GustingOptions {
+        int32 version = 1;
+
+        enum Gusting {
+            NoGusting = 0;
+            AverageGusting = 1;
+            TimeDerivedGusting = 2;
+            ROSDerivedGusting = 3;
+        }
+        enum GustingBias {
+            Middle = 0;
+            Start = -1;
+            End = 1;
+        }
+        Gusting gusting = 2;
+        optional int32 gustsPerHour = 3;    // valid for Gusting = 2
+        optional double percentGusting = 4; // valid for Gusting = 1, 2, 3
+                                            // 1: weighted averaging of wind speed and gusting, value represents percentage of gusting, so speed is ((100-percentGusting)*ws + percentGusting*gust)/100
+                                            // 2, 3: values are [0..100] - in an hour
+                                            // 2: gusts will occur (3600/gustPerHour*(percentGusting/100)) seconds per gust
+                                            // 3: gusts will occur for (3600*(percentGusting/100)) seconds per hour
+        optional GustingBias gustBias = 5;  // valid for Gusting = 2, 3, but Middle isn't valid for 3
+    }
+
     message Reference {
         oneof reference {
             string name = 1;

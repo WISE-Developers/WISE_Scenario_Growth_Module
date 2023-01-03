@@ -22,7 +22,7 @@ struct CCWFGM_Scenario::Impl
 {
 	MinListTempl<IgnitionNode<fireengine_float_type>>		m_ignitionList;
 	MinListTempl<AssetNode<fireengine_float_type>>			m_assetList;
-
+	GustingOptions<fireengine_float_type>					m_go;
 	Scenario<fireengine_float_type>*						m_scenario{ nullptr };
 
 	void unlockObjects(CCWFGM_Scenario& _this, VectorEngineNode* ve, AssetNode<fireengine_float_type>* an);

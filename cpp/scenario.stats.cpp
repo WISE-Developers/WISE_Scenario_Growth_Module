@@ -19,6 +19,7 @@
 #include "angles.h"
 #include "scenario.h"
 #include "ScenarioTimeStep.h"
+#include "CWFGM_Scenario_Internal.h"
 #include "results.h"
 #include "FireEngine_ext.h"
 #include "FuelCom_ext.h"
@@ -139,7 +140,20 @@ HRESULT Scenario<_type>::GetStats(const std::uint32_t fire, ICWFGM_Fuel *fuel, W
 
 	CRWThreadSemaphoreEngage _semaphore_engage2(sts->m_lock, SEM_FALSE);
 
-	if (stat == CWFGM_FIRE_STAT_TIMESTEP_DURATION_SECS) {
+	if (stat == CWFGM_FIRE_STAT_GUSTING) {
+		double acc = 0.0, cnt = 0.0;
+		ScenarioFire<_type>* sf = sts->m_fires.LH_Head();
+		while (sf->LN_Succ()) {
+			acc += sf->m_gusting;
+			cnt++;
+			sf = sf->LN_Succ();
+		}
+		if (cnt > 0.0)
+			*stats = acc / cnt;
+		else
+			*stats = 0.0;
+		return S_OK;
+	} else if (stat == CWFGM_FIRE_STAT_TIMESTEP_DURATION_SECS) {
 		prev_sts = GetPreviousStep(sts, true, nullptr);
 		if (prev_sts)
 			*stats = sts->m_time - prev_sts->m_time;
@@ -808,7 +822,9 @@ HRESULT Scenario<_type>::getCalculatedStats(XYPointType c_pt, const WTime& time,
 	}
 
 		double lb;
-		hr = fuel->CalculateROSValues(aspect, azimuth, wx.WindSpeed, wx.WindDirection + CONSTANTS_NAMESPACE::Pi<double>(), dfwi.dBUI, fmc, ifwi.FFMC, ff, WTimeSpan(0), time.GetTimeOfDay(WTIME_FORMAT_AS_LOCAL | WTIME_FORMAT_WITHDST), (std::int16_t)(flags & 0xffff), &overrides,
+		double windSpeed = m_scenario->m_impl->m_go.ApplyGusting(nullptr, time, wx.WindSpeed, wx.WindGust);
+
+		hr = fuel->CalculateROSValues(aspect, azimuth, windSpeed, wx.WindDirection + CONSTANTS_NAMESPACE::Pi<double>(), dfwi.dBUI, fmc, ifwi.FFMC, ff, WTimeSpan(0), time.GetTimeOfDay(WTIME_FORMAT_AS_LOCAL | WTIME_FORMAT_WITHDST), (std::int16_t)(flags & 0xffff), &overrides,
 			m_scenario, &rsi, &roseq, &ros, &frss, &froseq, &fros, &brss, &broseq, &bros, &lb, &wsv, &raz);
 		fbp_rss = rsi;
 		fbp_roseq = roseq;

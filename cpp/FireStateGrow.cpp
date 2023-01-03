@@ -179,7 +179,7 @@ void FirePoint<_type>::grow3D(const class ScenarioTimeStep<_type> *timeStep, con
 
 
 template<class _type>
-void FirePoint<_type>::Grow(struct vertex_shared * /*vs*/, std::uint32_t * /*vs_cnt*/, const growVoxelParms<_type> *gvs, ICWFGM_Fuel *fuel) {
+void FirePoint<_type>::Grow(const growVoxelParms<_type> *gvs, ICWFGM_Fuel *fuel) {
 	double latitude = gvs->latitude;
 	double longitude = gvs->longitude;
 	WTimeSpan accel_dtime = gvs->accel_dtime;
@@ -368,7 +368,9 @@ void FirePoint<_type>::Grow(struct vertex_shared * /*vs*/, std::uint32_t * /*vs_
 
 	double lb;
 
-	hr = fuel->CalculateROSValues(aspect, azimuth, wx.WindSpeed, wx.WindDirection + CONSTANTS_NAMESPACE::Pi<double>(), dfwi.dBUI, fmc, ifwi.FFMC, ff,
+	double windSpeed = sts->m_scenario->m_scenario->m_impl->m_go.ApplyGusting(gvs->self_fire, sts->m_time, wx.WindSpeed, wx.WindGust);
+
+	hr = fuel->CalculateROSValues(aspect, azimuth, windSpeed, wx.WindDirection + CONSTANTS_NAMESPACE::Pi<double>(), dfwi.dBUI, fmc, ifwi.FFMC, ff,
 		accel_dtime, gvs->day_portion, (std::int16_t)(flags & 0xffff), &overrides, sts->m_scenario->m_scenario,
 		&rsi, &roseq, &ros, &frss, &froseq, &fros, &brss, &broseq, &bros, &lb, &wsv, &raz);
 
@@ -413,7 +415,7 @@ void FirePoint<_type>::Grow(struct vertex_shared * /*vs*/, std::uint32_t * /*vs_
 		m_fbp_ros_ratio = 1.0;
 	}
 
-	if (!sts->m_scenario->CanBurn(sts->m_time, gvs->centroid, cpt, wx.RH, wx.WindSpeed, ifwi.FWI, ifwi.ISI)) {
+	if (!sts->m_scenario->CanBurn(sts->m_time, gvs->centroid, cpt, wx.RH, windSpeed, ifwi.FWI, ifwi.ISI)) {
 		m_ellipse_ros.x = m_ellipse_ros.y = 0.0;
 		m_fbp_ros_ratio = 1.0;
 	}
@@ -423,9 +425,6 @@ void FirePoint<_type>::Grow(struct vertex_shared * /*vs*/, std::uint32_t * /*vs_
 template<class _type>
 std::uint32_t AFX_CDECL growVoxelInit(APTR parameter) {
 	growVoxelIterator<_type> *gvs = (growVoxelIterator<_type>*)parameter;
-
-	vertex_shared *vs = NULL;
-	std::uint32_t *vs_cnt = NULL;
 
 	growVoxelParms<_type> cgvs(gvs->gvp);
 
@@ -481,7 +480,7 @@ DONE_SCAN:
 						bool result;
 						if ((valid) && (fuel) && (SUCCEEDED(fuel->IsNonFuel(&result))) && (!result)) {
 
-							fp_loop->Grow(vs, vs_cnt, &cgvs, fuel);
+							fp_loop->Grow(&cgvs, fuel);
 						} else {
 							fp_loop->m_ellipse_ros.x = fp_loop->m_ellipse_ros.y = 0.0;
 							fp_loop->m_fbp_ros_ratio = 1.0;
@@ -538,7 +537,7 @@ void FireFront<_type>::GrowPoints() {
 			ICWFGM_Fuel *fuel = gvs.self_fire_timestep->m_scenario->GetFuel(gvs.self_fire_timestep->m_time, *fp, valid);
 			bool result;
 			if ((valid) && (fuel) && (SUCCEEDED(fuel->IsNonFuel(&result))) && (!result)) {
-				fp->Grow(NULL, NULL, &gvs, fuel);
+				fp->Grow(&gvs, fuel);
 			} else {
 				fp->m_ellipse_ros.x = fp->m_ellipse_ros.y = 0.0;
 				fp->m_fbp_ros_ratio = 1.0;
