@@ -143,7 +143,7 @@ class Scenario;
 	Presently, this interface defines synchronous access to simplify the simulation engine and the client application.  The client application makes a request Step() and will wait
 	until the simulation engine is finished completing the request.  This model will provide sufficient control over the engine for this application.
 */
-class FIRECOM_API CCWFGM_Scenario : public ICWFGM_CommonBase, /*public ISerializeXMLStream,*/ public ICWFGM_PercentileAttribute, public ISerializeProto {
+class FIRECOM_API CCWFGM_Scenario : public ICWFGM_CommonBase, public ICWFGM_PercentileAttribute, public ISerializeProto {
 public:
 	friend class CWFGM_ScenarioHelper;
 	template<typename T> friend class ScenarioTimeStep;
