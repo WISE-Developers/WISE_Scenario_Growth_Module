@@ -49,13 +49,6 @@ ScenarioGridCache<_type>::ScenarioGridCache(CCWFGM_Scenario *scenario, const XY_
 
 
 template<class _type>
-bool ScenarioGridCache<_type>::allocCPArray() {
-
-	return true;
-}
-
-
-template<class _type>
 ScenarioGridCache<_type>::~ScenarioGridCache() {
 }
 
@@ -501,9 +494,6 @@ void ScenarioGridCache<_type>::fromInternal3D(_type& value) const {			// opportu
 
 template<class _type>
 void ScenarioGridCache<_type>::RecordTimeStep(ScenarioTimeStep<_type> *sts1) {
-	if (!m_cpArray)
-		return;
-
 	if (m_scenario->m_optionFlags & (1ull <<  CWFGM_SCENARIO_OPTION_PURGE_NONDISPLAYABLE))
 		if (!sts1->m_displayable)
 			return;			// no point in adding it if we're just going to delete it anyway
@@ -538,9 +528,6 @@ void ScenarioGridCache<_type>::RecordTimeStep(ScenarioTimeStep<_type> *sts1) {
 				for (y = y1; y <= y2; y++) {
 					sts = sts1;
 					std::uint32_t idx = arrayIndex(x, y);
-
-					if (m_cpArray[idx].m_fp)
-						continue;
 
 					XYPointType pt(x, y);
 					pt.x += 0.5;
@@ -577,166 +564,12 @@ void ScenarioGridCache<_type>::RecordTimeStep(ScenarioTimeStep<_type> *sts1) {
 					if (sts_prev)	prev_closest = sts_prev->GetNearestPoint(pt, false, &prev_closest_ff, false);
 					else			prev_closest = nullptr;
 
-					if ((prev_closest) && (prev_closest->DistanceToSquared(pt) < closest->DistanceToSquared(pt))) {
-						m_cpArray[idx].m_fp = prev_closest;
-						m_cpArray[idx].m_ff = prev_closest_ff;
-					}
-					else {
-						m_cpArray[idx].m_fp = closest;
-						m_cpArray[idx].m_ff = closest_ff;
-					}
-					m_cpArray[idx].m_time = sts->m_time.GetTotalMicroSeconds();
-
 				}
 		}
 		sf = sf->LN_Succ();
 	}
 }
 
-
-template<class _type>
-bool ScenarioGridCache<_type>::RetrieveCPoint(const XYPointType &pt, const WTime &time, bool displayable, FirePoint<_type> **fp, FireFront<_type> **ff) {
-	if (!m_cpArray)
-		return false;
-
-	CRWThreadSemaphoreEngage _semaphore_engageT(m_cplock, SEM_FALSE);
-
-	std::uint32_t idx = arrayIndex(pt);
-	*fp = m_cpArray[idx].m_fp;
-	*ff = m_cpArray[idx].m_ff;
-
-	if (!displayable) {
-		if (*ff)
-			return ((!time.GetTime(0)) || (m_cpArray[idx].m_time <= time.GetTotalMicroSeconds()));
-		return false;
-	}
-
-	// if we're limiting the search to displayable timesteps, then the rest of the code is called, and since the displayable timesteps
-	// contain all ignitions that are active, we don't need to track them by LN_CalcPred(), just look for the prior displayable timestep
-
-	const ScenarioTimeStep<_type> *sts, *sts_prev;
-	if (*ff) {
-		sts = (*ff)->Fire()->TimeStep();
-		if (sts->m_time.GetTime(0) == m_cpArray[idx].m_time)
-			sts_prev = sts->LN_Pred();
-		else {
-			sts_prev = sts;
-			sts = sts->LN_Succ();
-		}
-	} else
-		return false;
-
-	while (!sts->m_displayable) {
-		if ((time.GetTime(0)) && (sts->m_time > time))
-			return false;
-		sts = sts->LN_Succ();
-		if (!sts->LN_Succ())
-			return false;
-	}
-
-	if (sts_prev->LN_Pred()) {
-		while (!sts_prev->m_displayable) {
-			sts_prev = sts_prev->LN_Pred();
-			if (!sts_prev->LN_Pred()) {
-				sts_prev = nullptr;
-				break;
-			}
-		}
-	}
-
-	FireFront<_type> *closest_ff;
-	FirePoint<_type> *closest = sts->GetNearestPoint(pt, false, &closest_ff, true);
-
-	FirePoint<_type> *prev_closest;
-	FireFront<_type> *prev_closest_ff;
-	if (sts_prev)	prev_closest = sts_prev->GetNearestPoint(pt, false, &prev_closest_ff, false);
-	else			prev_closest = nullptr;
-
-	if ((prev_closest) && (prev_closest->DistanceToSquared(pt) < closest->DistanceToSquared(pt))) {
-		*fp = prev_closest;
-		*ff = prev_closest_ff;
-	} else {
-		*fp = closest;
-		*ff = closest_ff;
-	}
-	return true;
-}
-
-
-template<class _type>
-bool ScenarioGridCache<_type>::RetrieveCPoint(const XYPointType& pt, const WTime& mintime, const WTime& time, bool displayable, FirePoint<_type>** fp, FireFront<_type>** ff) {
-	if (!m_cpArray)
-		return false;
-
-	CRWThreadSemaphoreEngage _semaphore_engageT(m_cplock, SEM_FALSE);
-
-	std::uint32_t idx = arrayIndex(pt);
-	*fp = m_cpArray[idx].m_fp;
-	*ff = m_cpArray[idx].m_ff;
-
-	if (!displayable) {
-		if (*ff)
-			return ((!time.GetTime(0)) || ((m_cpArray[idx].m_time <= time.GetTotalMicroSeconds()) && (m_cpArray[idx].m_time > mintime.GetTotalMicroSeconds())));
-		return false;
-	}
-
-	// if we're limiting the search to displayable timesteps, then the rest of the code is called, and since the displayable timesteps
-	// contain all ignitions that are active, we don't need to track them by LN_CalcPred(), just look for the prior displayable timestep
-
-	const ScenarioTimeStep<_type>* sts, * sts_prev;
-	if (*ff) {
-		sts = (*ff)->Fire()->TimeStep();
-		if (sts->m_time.GetTotalMicroSeconds() < mintime.GetTotalMicroSeconds())
-			return FALSE;
-		if (sts->m_time.GetTime(0) == m_cpArray[idx].m_time)
-			sts_prev = sts->LN_Pred();
-		else {
-			sts_prev = sts;
-			sts = sts->LN_Succ();
-		}
-	}
-	else
-		return false;
-
-	while (!sts->m_displayable) {
-		if ((time.GetTime(0)) && (sts->m_time > time))
-			return false;
-		sts = sts->LN_Succ();
-		if (!sts->LN_Succ())
-			return false;
-	}
-
-	if (sts_prev->LN_Pred()) {
-		while (!sts_prev->m_displayable) {
-			sts_prev = sts_prev->LN_Pred();
-			if (!sts_prev->LN_Pred()) {
-				sts_prev = nullptr;
-				break;
-			}
-		}
-	}
-
-	if ((sts_prev) && (sts_prev->m_time.GetTotalMicroSeconds() < mintime.GetTotalMicroSeconds()))
-		sts_prev = nullptr;
-
-	FireFront<_type>* closest_ff;
-	FirePoint<_type>* closest = sts->GetNearestPoint(pt, false, &closest_ff, true);
-
-	FirePoint<_type>* prev_closest;
-	FireFront<_type>* prev_closest_ff;
-	if (sts_prev)	prev_closest = sts_prev->GetNearestPoint(pt, false, &prev_closest_ff, false);
-	else			prev_closest = nullptr;
-
-	if ((prev_closest) && (prev_closest->DistanceToSquared(pt) < closest->DistanceToSquared(pt))) {
-		*fp = prev_closest;
-		*ff = prev_closest_ff;
-	}
-	else {
-		*fp = closest;
-		*ff = closest_ff;
-	}
-	return true;
-}
 
 
 template<class _type>

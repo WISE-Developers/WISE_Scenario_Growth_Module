@@ -122,11 +122,6 @@ public:
 
 	void Size(const XYPointType &ll, const XYPointType &ur);
 	void RecordTimeStep(ScenarioTimeStep<_type> *sts);
-	bool RetrieveCPoint(const XYPointType &pt, const WTime &time, bool displayable, FirePoint<_type> **fp, FireFront<_type> **ff);
-	bool RetrieveCPoint(const XYPointType& pt, const WTime &mintime, const WTime& time, bool displayable, FirePoint<_type>** fp, FireFront<_type>** ff);
-
-protected:
-	bool allocCPArray();
 
 private:
 	void grid_create(const XYPointType &ll, const XYPointType &ur);
@@ -184,7 +179,6 @@ protected:
 	using XYPolyConstType = XY_PolyConstTempl<_type>;
 
 private:
-	using ScenarioGridCache<_type>::allocCPArray;
 	using ScenarioGridCache<_type>::m_plot_X;
 	using ScenarioGridCache<_type>::m_plot_Y;
 
@@ -209,8 +203,6 @@ public:
 	std::uint32_t	m_numthreads;
 
 	CWorkerThreadPool	*m_pool;		// for multi-CPU operations
-
-	bool AllocCPArray();
 
 	std::uint32_t						StaticVectorBreakCount() const					{ return (std::uint32_t)m_staticVectorBreaksLL->size(); }
 	std::uint32_t								AssetCount() const;

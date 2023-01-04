@@ -77,7 +77,6 @@ class Scenario : public ScenarioCache<_type> {
 public:
 	using ScenarioGridCache<_type>::m_scenario;
 	using ScenarioGridCache<_type>::RecordTimeStep;
-	using ScenarioGridCache<_type>::RetrieveCPoint;
 	using ScenarioCache<_type>::m_specifiedFMC_Landscape;
 	using ScenarioCache<_type>::m_specifiedElev_Landscape;
 	using ScenarioCache<_type>::m_coordinateConverter;
