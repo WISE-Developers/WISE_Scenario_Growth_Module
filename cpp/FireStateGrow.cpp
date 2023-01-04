@@ -576,7 +576,7 @@ void ScenarioTimeStep<_type>::StatsFires() {
 	else
 		queue_up = QUEUE_UP >> 1;
 
-	if (total_num_points > queue_up) && (m_scenario->m_pool) {
+	if ((total_num_points > queue_up) && (m_scenario->m_pool)) {
 		growVoxelIterator<_type> gvs;
 		gvs.gvp.self_fire_timestep = this;
 		Centroid(&gvs.gvp.centroid);
