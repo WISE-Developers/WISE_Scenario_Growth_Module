@@ -108,7 +108,7 @@ HRESULT CCWFGM_Ignition::fixResolution() {
 	if (!(gridEngine = m_gridEngine))					{ weak_assert(false); return ERROR_GRID_UNINITIALIZED; }
 
 	if (!m_timeManager) {
-		weak_assert(0);
+		weak_assert(false);
 		ICWFGM_CommonData* data;
 		if (FAILED(hr = gridEngine->GetCommonData(nullptr, &data)) || (!data)) return hr;
 		m_timeManager = data->m_timeManager;

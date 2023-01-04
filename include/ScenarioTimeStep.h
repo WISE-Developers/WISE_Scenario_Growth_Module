@@ -57,13 +57,13 @@ public:									// one polygon defining (part of) a specific fire - so all fire 
 
 	ScenarioFire(const ScenarioTimeStep<_type> *timeStep, const IgnitionNode<_type> *ignition, ScenarioFire<_type> *pred);
 
-	__INLINE ScenarioFire<_type> *LN_Succ() const				{ return (ScenarioFire<_type>*)MinNode::LN_Succ(); };
-	__INLINE ScenarioFire<_type> *LN_Pred() const				{ return (ScenarioFire<_type>*)MinNode::LN_Pred(); };
-	__INLINE ScenarioFire<_type> *LN_CalcPred() const			{ return m_calcPred; };	// can be NULL!
-	__INLINE ScenarioFire<_type> *LN_CalcSucc() const			{ return m_calcSucc; };	// can be NULL!
+	ScenarioFire<_type> *LN_Succ() const				{ return (ScenarioFire<_type>*)MinNode::LN_Succ(); };
+	ScenarioFire<_type> *LN_Pred() const				{ return (ScenarioFire<_type>*)MinNode::LN_Pred(); };
+	ScenarioFire<_type> *LN_CalcPred() const			{ return m_calcPred; };	// can be NULL!
+	ScenarioFire<_type> *LN_CalcSucc() const			{ return m_calcSucc; };	// can be NULL!
 
-	__INLINE const ScenarioTimeStep<_type> *TimeStep() const	{ return m_timeStep; };
-	__INLINE const IgnitionNode<_type> *Ignition() const		{ return m_ignition; };
+	const ScenarioTimeStep<_type> *TimeStep() const	{ return m_timeStep; };
+	const IgnitionNode<_type> *Ignition() const		{ return m_ignition; };
 
 	_type						m_fireArea;					// used when running a simulation - it's a temporary used to rank fires by size
 	class ActiveFire<_type>		*m_activeFire;
@@ -134,8 +134,8 @@ protected:
 template<class _type>
 class XY_PolyLLPolyRef : public RefNode<XY_PolyLL_Templ<XY_PolyLLNode<_type>, _type>> {
 public:
-	__INLINE XY_PolyLLPolyRef* LN_Succ() const { return (XY_PolyLLPolyRef*)RefNode<XY_PolyLL_Templ<XY_PolyLLNode<_type>, _type>>::LN_Succ(); }
-	__INLINE XY_PolyLLPolyRef* LN_Pred() const { return (XY_PolyLLPolyRef*)RefNode<XY_PolyLL_Templ<XY_PolyLLNode<_type>, _type>>::LN_Pred(); }
+	XY_PolyLLPolyRef* LN_Succ() const { return (XY_PolyLLPolyRef*)RefNode<XY_PolyLL_Templ<XY_PolyLLNode<_type>, _type>>::LN_Succ(); }
+	XY_PolyLLPolyRef* LN_Pred() const { return (XY_PolyLLPolyRef*)RefNode<XY_PolyLL_Templ<XY_PolyLLNode<_type>, _type>>::LN_Pred(); }
 
 	DECLARE_OBJECT_CACHE_MT(XY_PolyLLPolyRef, XY_PolyLLPolyRef)
 };
@@ -159,8 +159,8 @@ public:
 	ScenarioTimeStep(Scenario<_type> *scenario, const WTime &event_end, bool simulation_end);
 	virtual ~ScenarioTimeStep();
 
-	__INLINE ScenarioTimeStep<_type> *LN_Succ() const	{ return (ScenarioTimeStep<_type>*)MinNode::LN_Succ(); };
-	__INLINE ScenarioTimeStep<_type> *LN_Pred() const	{ return (ScenarioTimeStep<_type>*)MinNode::LN_Pred(); };
+	ScenarioTimeStep<_type> *LN_Succ() const	{ return (ScenarioTimeStep<_type>*)MinNode::LN_Succ(); };
+	ScenarioTimeStep<_type> *LN_Pred() const	{ return (ScenarioTimeStep<_type>*)MinNode::LN_Pred(); };
 
 	CRWThreadSemaphore																m_lock;
 	CThreadSemaphore																m_c_lock;			// only used for race conditions in calculating the centroid for the timestep's polygons

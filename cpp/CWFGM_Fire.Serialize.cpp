@@ -62,7 +62,7 @@ HRESULT CCWFGM_Ignition::ImportIgnition(const std::string &file_path, const std:
 	if (FAILED(hr = m_gridEngine->GetAttribute(0, CWFGM_GRID_ATTRIBUTE_SPATIALREFERENCE, &var)))	{ if (pd) { std::uint32_t i = 0; while (pd[i]) free((APTR)pd[i++]); free(pd); } return hr; }
 	std::string projection;
 	try { projection = std::get<std::string>(var); } catch (std::bad_variant_access &) {
-		weak_assert(0);
+		weak_assert(false);
 		if (pd) { std::uint32_t i = 0; while (pd[i]) free((APTR)pd[i++]); free(pd); }
 		return ERROR_PROJECTION_UNKNOWN;
 	} /*POLYMORPHIC*/
@@ -178,7 +178,7 @@ HRESULT CCWFGM_Ignition::ImportIgnitionWFS(const std::string &url, const std::st
 
 	if (FAILED(hr = m_gridEngine->GetAttribute(0, CWFGM_GRID_ATTRIBUTE_SPATIALREFERENCE, &var)))	{ return hr; }
 	std::string projection;
-	try { projection = std::get<std::string>(var); } catch (std::bad_variant_access &) { weak_assert(0); return ERROR_PROJECTION_UNKNOWN; }; /*POLYMORPHIC*/
+	try { projection = std::get<std::string>(var); } catch (std::bad_variant_access &) { weak_assert(false); return ERROR_PROJECTION_UNKNOWN; }; /*POLYMORPHIC*/
 
 	OGRSpatialReferenceH oSourceSRS = CCoordinateConverter::CreateSpatialReferenceFromWkt(projection.c_str());
 
@@ -280,7 +280,7 @@ HRESULT CCWFGM_Ignition::ExportIgnition(const std::string &driver_name, const st
 
 	if (FAILED(hr = m_gridEngine->GetAttribute(0, CWFGM_GRID_ATTRIBUTE_SPATIALREFERENCE, &var))) return hr;
 	std::string projection;
-	try { projection = std::get<std::string>(var); } catch (std::bad_variant_access &) { weak_assert(0); return ERROR_PROJECTION_UNKNOWN; }; /*POLYMORPHIC*/
+	try { projection = std::get<std::string>(var); } catch (std::bad_variant_access &) { weak_assert(false); return ERROR_PROJECTION_UNKNOWN; }; /*POLYMORPHIC*/
 
 	OGRSpatialReferenceH oSourceSRS = CCoordinateConverter::CreateSpatialReferenceFromWkt(projection.c_str());
 
@@ -364,7 +364,7 @@ CCWFGM_Ignition *CCWFGM_Ignition::deserialize(const google::protobuf::Message& p
 			/// </summary>
 			/// <type>internal</type>
 			valid->add_child_validation("WISE.FireEngineProto.CwfgmIgnition", name, validation::error_level::SEVERE, validation::id::object_invalid, proto.GetDescriptor()->name());
-		weak_assert(0);
+		weak_assert(false);
 		m_loadWarning = "Error: WISE.FireEngineProto.CwfgmIgnition: Protobuf object invalid";
 		throw ISerializeProto::DeserializeError("WISE.FireEngineProto.CwfgmFire: Protobuf object invalid", ERROR_PROTOBUF_OBJECT_INVALID);
 	}
@@ -377,7 +377,7 @@ CCWFGM_Ignition *CCWFGM_Ignition::deserialize(const google::protobuf::Message& p
 			/// </summary>
 			/// <type>user</type>
 			valid->add_child_validation("WISE.FireEngineProto.CwfgmIgnition", name, validation::error_level::SEVERE, validation::id::version_mismatch, std::to_string(engine->version()));
-		weak_assert(0);
+		weak_assert(false);
 		m_loadWarning = "Error: WISE.FireEngineProto.CwfgmIgnition: Version is invalid";
 		throw ISerializeProto::DeserializeError("WISE.FireEngineProto.CwfgmFire: Version is invalid", ERROR_PROTOBUF_OBJECT_VERSION_INVALID);
 	}

@@ -260,7 +260,7 @@ void FirePoint<_type>::Grow(const growVoxelParms<_type> *gvs, ICWFGM_Fuel *fuel)
 
 			hr = fuel->FMC(latitude, longitude, elev, (std::uint16_t)sts->m_time.GetDayOfYear(WTIME_FORMAT_AS_LOCAL | WTIME_FORMAT_WITHDST), &overrides, &fmc);
 		} else {					// in Prometheus, this case shouldn't happen any more
-			weak_assert(0);
+			weak_assert(false);
 			hr = fuel->FMC(latitude, longitude, -99.0, (std::uint16_t)sts->m_time.GetDayOfYear(WTIME_FORMAT_AS_LOCAL | WTIME_FORMAT_WITHDST), &overrides, &fmc);
 		}
 	}

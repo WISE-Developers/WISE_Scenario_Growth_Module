@@ -34,7 +34,6 @@
 template<class _type>
 ScenarioGridCache<_type>::ScenarioGridCache(CCWFGM_Scenario *scenario, const XY_Point &start_ll, const XY_Point& start_ur, const _type resolution /*, const std::uint16_t plot_X, const std::uint16_t plot_Y*/)
     : m_scenario(scenario), m_ll(start_ll), m_ur(start_ur), m_resolution(resolution) /*, m_plot_X(plot_X), m_plot_Y(plot_Y)*/ {
-	m_cpArray = nullptr;
 	m_resolution2 = m_resolution * m_resolution;
 	m_resolution3 = m_resolution * m_resolution2;
 	m_iresolution = 1.0 / m_resolution;
@@ -50,17 +49,7 @@ ScenarioGridCache<_type>::ScenarioGridCache(CCWFGM_Scenario *scenario, const XY_
 
 
 template<class _type>
-bool ScenarioGridCache<_type>::allocCPArray() {
-
-	return true;
-}
-
-
-template<class _type>
 ScenarioGridCache<_type>::~ScenarioGridCache() {
-	if (m_cpArray) {
-		free(m_cpArray);
-	}
 }
 
 
@@ -74,15 +63,6 @@ void ScenarioGridCache<_type>::Size(const XYPointType &ll, const XYPointType &ur
 		m_plot_Y = (std::uint16_t)(dims.y * m_iresolution);
 		return;
 	}
-	if (m_cpArray) {
-		if (ll.Equals(m_ll) && ur.Equals(m_ur)) {
-			return;
-		}
-	}
-	if (!m_cpArray)
-		grid_create(ll, ur);
-	else
-		grid_resize(ll, ur);
 }
 
 
@@ -93,16 +73,6 @@ void ScenarioGridCache<_type>::grid_create(const XYPointType &ll, const XYPointT
 	XYPointType dims = ur - ll;
 	m_plot_X = (std::uint16_t)(dims.x * m_iresolution);
 	m_plot_Y = (std::uint16_t)(dims.y * m_iresolution);
-
-	try {
-		std::uint32_t size = (std::uint32_t)m_plot_X * (std::uint32_t)m_plot_Y;
-		size_t allocsize = ((size_t)size) * sizeof(ClosestPoint);
-		m_cpArray = (ClosestPoint *)malloc(allocsize);
-		if (m_cpArray)
-			memset(m_cpArray, 0, allocsize);
-	} catch (std::bad_alloc &e) {
-		m_cpArray = nullptr;
-	}
 }
 
 
@@ -138,32 +108,6 @@ void ScenarioGridCache<_type>::grid_resize(const XYPointType &_ll, const XYPoint
 	if ((m_plot_X == plot_X) && (m_plot_Y == plot_Y))
 		if (m_ll.Equals(ll) && (m_ur.Equals(ur)))
 			return;						// bounding box grew larger but not enough to require a larger grid cache
-
-	ClosestPoint *cpArray = nullptr;
-	try {
-		std::uint32_t size = (std::uint32_t)plot_X * (std::uint32_t)plot_Y;
-		size_t allocsize = ((size_t)size) * sizeof(ClosestPoint);
-		cpArray = (ClosestPoint *)malloc(allocsize);
-		if (cpArray)
-			memset(cpArray, 0, allocsize);
-		else
-			return;
-	} catch (std::bad_alloc &) {
-		return;
-	}
-
-	for (std::uint16_t x = off_x; x < (off_x + m_plot_X); x++) {
-		for (std::uint16_t y = off_y; y < (off_y + m_plot_Y); y++) {
-			std::uint32_t old_index = arrayIndex(x - off_x, y - off_y);
-			std::uint32_t new_index = y * plot_X + x;
-			cpArray[new_index] = m_cpArray[old_index];
-		}
-	}
-
-	// ********************************* need to grow the static vector grids too, around non-fuels
-
-	free(m_cpArray);
-	m_cpArray = cpArray;
 
 	m_plot_X = plot_X;
 	m_plot_Y = plot_Y;
@@ -550,9 +494,6 @@ void ScenarioGridCache<_type>::fromInternal3D(_type& value) const {			// opportu
 
 template<class _type>
 void ScenarioGridCache<_type>::RecordTimeStep(ScenarioTimeStep<_type> *sts1) {
-	if (!m_cpArray)
-		return;
-
 	if (m_scenario->m_optionFlags & (1ull <<  CWFGM_SCENARIO_OPTION_PURGE_NONDISPLAYABLE))
 		if (!sts1->m_displayable)
 			return;			// no point in adding it if we're just going to delete it anyway
@@ -588,9 +529,6 @@ void ScenarioGridCache<_type>::RecordTimeStep(ScenarioTimeStep<_type> *sts1) {
 					sts = sts1;
 					std::uint32_t idx = arrayIndex(x, y);
 
-					if (m_cpArray[idx].m_fp)
-						continue;
-
 					XYPointType pt(x, y);
 					pt.x += 0.5;
 					pt.y += 0.5;
@@ -610,7 +548,7 @@ void ScenarioGridCache<_type>::RecordTimeStep(ScenarioTimeStep<_type> *sts1) {
 					FirePoint<_type>* closest = sts->GetNearestPoint(pt, true, &closest_ff, true);
 
 					if (!closest) {				// so, this will occur and will loop back until we find an appropriate closest point - shouldn't matter if the timestep includes all ScenarioFire's or not
-						weak_assert(0);				// shouldn't occur due to the continue statement/test above
+						weak_assert(false);				// shouldn't occur due to the continue statement/test above
 						sts = sts->LN_Pred();
 						if (sts->LN_Pred())
 							goto AGAIN;
@@ -626,166 +564,12 @@ void ScenarioGridCache<_type>::RecordTimeStep(ScenarioTimeStep<_type> *sts1) {
 					if (sts_prev)	prev_closest = sts_prev->GetNearestPoint(pt, false, &prev_closest_ff, false);
 					else			prev_closest = nullptr;
 
-					if ((prev_closest) && (prev_closest->DistanceToSquared(pt) < closest->DistanceToSquared(pt))) {
-						m_cpArray[idx].m_fp = prev_closest;
-						m_cpArray[idx].m_ff = prev_closest_ff;
-					}
-					else {
-						m_cpArray[idx].m_fp = closest;
-						m_cpArray[idx].m_ff = closest_ff;
-					}
-					m_cpArray[idx].m_time = sts->m_time.GetTotalMicroSeconds();
-
 				}
 		}
 		sf = sf->LN_Succ();
 	}
 }
 
-
-template<class _type>
-bool ScenarioGridCache<_type>::RetrieveCPoint(const XYPointType &pt, const WTime &time, bool displayable, FirePoint<_type> **fp, FireFront<_type> **ff) {
-	if (!m_cpArray)
-		return false;
-
-	CRWThreadSemaphoreEngage _semaphore_engageT(m_cplock, SEM_FALSE);
-
-	std::uint32_t idx = arrayIndex(pt);
-	*fp = m_cpArray[idx].m_fp;
-	*ff = m_cpArray[idx].m_ff;
-
-	if (!displayable) {
-		if (*ff)
-			return ((!time.GetTime(0)) || (m_cpArray[idx].m_time <= time.GetTotalMicroSeconds()));
-		return false;
-	}
-
-	// if we're limiting the search to displayable timesteps, then the rest of the code is called, and since the displayable timesteps
-	// contain all ignitions that are active, we don't need to track them by LN_CalcPred(), just look for the prior displayable timestep
-
-	const ScenarioTimeStep<_type> *sts, *sts_prev;
-	if (*ff) {
-		sts = (*ff)->Fire()->TimeStep();
-		if (sts->m_time.GetTime(0) == m_cpArray[idx].m_time)
-			sts_prev = sts->LN_Pred();
-		else {
-			sts_prev = sts;
-			sts = sts->LN_Succ();
-		}
-	} else
-		return false;
-
-	while (!sts->m_displayable) {
-		if ((time.GetTime(0)) && (sts->m_time > time))
-			return false;
-		sts = sts->LN_Succ();
-		if (!sts->LN_Succ())
-			return false;
-	}
-
-	if (sts_prev->LN_Pred()) {
-		while (!sts_prev->m_displayable) {
-			sts_prev = sts_prev->LN_Pred();
-			if (!sts_prev->LN_Pred()) {
-				sts_prev = nullptr;
-				break;
-			}
-		}
-	}
-
-	FireFront<_type> *closest_ff;
-	FirePoint<_type> *closest = sts->GetNearestPoint(pt, false, &closest_ff, true);
-
-	FirePoint<_type> *prev_closest;
-	FireFront<_type> *prev_closest_ff;
-	if (sts_prev)	prev_closest = sts_prev->GetNearestPoint(pt, false, &prev_closest_ff, false);
-	else			prev_closest = nullptr;
-
-	if ((prev_closest) && (prev_closest->DistanceToSquared(pt) < closest->DistanceToSquared(pt))) {
-		*fp = prev_closest;
-		*ff = prev_closest_ff;
-	} else {
-		*fp = closest;
-		*ff = closest_ff;
-	}
-	return true;
-}
-
-
-template<class _type>
-bool ScenarioGridCache<_type>::RetrieveCPoint(const XYPointType& pt, const WTime& mintime, const WTime& time, bool displayable, FirePoint<_type>** fp, FireFront<_type>** ff) {
-	if (!m_cpArray)
-		return false;
-
-	CRWThreadSemaphoreEngage _semaphore_engageT(m_cplock, SEM_FALSE);
-
-	std::uint32_t idx = arrayIndex(pt);
-	*fp = m_cpArray[idx].m_fp;
-	*ff = m_cpArray[idx].m_ff;
-
-	if (!displayable) {
-		if (*ff)
-			return ((!time.GetTime(0)) || ((m_cpArray[idx].m_time <= time.GetTotalMicroSeconds()) && (m_cpArray[idx].m_time > mintime.GetTotalMicroSeconds())));
-		return false;
-	}
-
-	// if we're limiting the search to displayable timesteps, then the rest of the code is called, and since the displayable timesteps
-	// contain all ignitions that are active, we don't need to track them by LN_CalcPred(), just look for the prior displayable timestep
-
-	const ScenarioTimeStep<_type>* sts, * sts_prev;
-	if (*ff) {
-		sts = (*ff)->Fire()->TimeStep();
-		if (sts->m_time.GetTotalMicroSeconds() < mintime.GetTotalMicroSeconds())
-			return FALSE;
-		if (sts->m_time.GetTime(0) == m_cpArray[idx].m_time)
-			sts_prev = sts->LN_Pred();
-		else {
-			sts_prev = sts;
-			sts = sts->LN_Succ();
-		}
-	}
-	else
-		return false;
-
-	while (!sts->m_displayable) {
-		if ((time.GetTime(0)) && (sts->m_time > time))
-			return false;
-		sts = sts->LN_Succ();
-		if (!sts->LN_Succ())
-			return false;
-	}
-
-	if (sts_prev->LN_Pred()) {
-		while (!sts_prev->m_displayable) {
-			sts_prev = sts_prev->LN_Pred();
-			if (!sts_prev->LN_Pred()) {
-				sts_prev = nullptr;
-				break;
-			}
-		}
-	}
-
-	if ((sts_prev) && (sts_prev->m_time.GetTotalMicroSeconds() < mintime.GetTotalMicroSeconds()))
-		sts_prev = nullptr;
-
-	FireFront<_type>* closest_ff;
-	FirePoint<_type>* closest = sts->GetNearestPoint(pt, false, &closest_ff, true);
-
-	FirePoint<_type>* prev_closest;
-	FireFront<_type>* prev_closest_ff;
-	if (sts_prev)	prev_closest = sts_prev->GetNearestPoint(pt, false, &prev_closest_ff, false);
-	else			prev_closest = nullptr;
-
-	if ((prev_closest) && (prev_closest->DistanceToSquared(pt) < closest->DistanceToSquared(pt))) {
-		*fp = prev_closest;
-		*ff = prev_closest_ff;
-	}
-	else {
-		*fp = closest;
-		*ff = closest_ff;
-	}
-	return true;
-}
 
 
 template<class _type>
@@ -807,7 +591,7 @@ ScenarioCache<_type>::ScenarioCache(CCWFGM_Scenario* scenario, const XY_Point &s
 	PolymorphicAttribute var;
 	if (SUCCEEDED(hr = m_scenario->m_gridEngine->GetAttribute(m_scenario->m_layerThread, CWFGM_GRID_ATTRIBUTE_SPATIALREFERENCE, &var))) {
 		std::string projection;
-		try { projection = std::get<std::string>(var); } catch (std::bad_variant_access &) { weak_assert(0); return; };
+		try { projection = std::get<std::string>(var); } catch (std::bad_variant_access &) { weak_assert(false); return; };
 
 		m_coordinateConverter.SetSourceProjection(projection.c_str());
 	}
@@ -1307,14 +1091,14 @@ bool ScenarioCache<_type>::CanBurnTime(const WTime &dateTime, const XYPointType 
 		(time_valid != grid::AttributeValue::NOT_SET)) {
 		std::int64_t s_time;
 		if (!(variantToInt64(time, &s_time))) {
-			weak_assert(0);
+			weak_assert(false);
 			return false;
 		}
 		if (SUCCEEDED(hr = m_scenario->m_gridEngine->GetAttributeData(m_scenario->m_layerThread, centroid, dateTime, WTimeSpan(0), CWFGM_GRID_ATTRIBUTE_BURNINGCONDITION_PERIOD_END_COMPUTED, 0, &time, &time_valid, nullptr)) &&
 			(time_valid != grid::AttributeValue::NOT_SET)) {
 			std::int64_t e_time;
 			if (!(variantToInt64(time, &e_time))) {
-				weak_assert(0);
+				weak_assert(false);
 				return false;
 			}
 			start = WTimeSpan(s_time);

@@ -47,15 +47,6 @@ protected:
 	using XYPointType = XY_PointTempl<_type>;
 	using XYRectangleType = XY_RectangleTempl<_type>;
 
-	struct ClosestPoint {
-	    public:
-		FirePoint<_type>	*m_fp;
-		FireFront<_type>	*m_ff;
-		std::uint64_t		m_time;
-	};
-
-	ClosestPoint			*m_cpArray;
-
 protected:
 	std::uint16_t			m_plot_X, m_plot_Y;
 
@@ -131,11 +122,6 @@ public:
 
 	void Size(const XYPointType &ll, const XYPointType &ur);
 	void RecordTimeStep(ScenarioTimeStep<_type> *sts);
-	bool RetrieveCPoint(const XYPointType &pt, const WTime &time, bool displayable, FirePoint<_type> **fp, FireFront<_type> **ff);
-	bool RetrieveCPoint(const XYPointType& pt, const WTime &mintime, const WTime& time, bool displayable, FirePoint<_type>** fp, FireFront<_type>** ff);
-
-protected:
-	bool allocCPArray();
 
 private:
 	void grid_create(const XYPointType &ll, const XYPointType &ur);
@@ -156,8 +142,8 @@ public:
 	XY_PolyLLTimed(XY_PolyLL_Templ<XY_PolyLLNode<_type>, _type>&& toMove) : XY_PolyLL_Templ<XY_PolyLLNode<_type>, _type>::XY_PolyLL_Templ(toMove), m_usedTime(0, nullptr) {};
 	XY_PolyLLTimed(const XY_PointTempl<_type>* pt_array, std::uint32_t array_size) : XY_PolyLL_Templ<XY_PolyLLNode<_type>, _type>::XY_PolyLL_Templ(pt_array, array_size), m_usedTime(0, nullptr) {};
 
-	__INLINE XY_PolyLLTimed* LN_Succ() const { return (XY_PolyLLTimed*)XY_PolyLL_Templ<XY_PolyLLNode<_type>, _type>::LN_Succ(); }
-	__INLINE XY_PolyLLTimed* LN_Pred() const { return (XY_PolyLLTimed*)XY_PolyLL_Templ<XY_PolyLLNode<_type>, _type>::LN_Pred(); }
+	XY_PolyLLTimed* LN_Succ() const { return (XY_PolyLLTimed*)XY_PolyLL_Templ<XY_PolyLLNode<_type>, _type>::LN_Succ(); }
+	XY_PolyLLTimed* LN_Pred() const { return (XY_PolyLLTimed*)XY_PolyLL_Templ<XY_PolyLLNode<_type>, _type>::LN_Pred(); }
 
 	virtual bool Clip_Participates(APTR parm) const override {
 		if (!parm)
@@ -193,7 +179,6 @@ protected:
 	using XYPolyConstType = XY_PolyConstTempl<_type>;
 
 private:
-	using ScenarioGridCache<_type>::allocCPArray;
 	using ScenarioGridCache<_type>::m_plot_X;
 	using ScenarioGridCache<_type>::m_plot_Y;
 
@@ -219,12 +204,10 @@ public:
 
 	CWorkerThreadPool	*m_pool;		// for multi-CPU operations
 
-	bool AllocCPArray();
-
-	__INLINE std::uint32_t						StaticVectorBreakCount() const					{ return (std::uint32_t)m_staticVectorBreaksLL->size(); }
+	std::uint32_t						StaticVectorBreakCount() const					{ return (std::uint32_t)m_staticVectorBreaksLL->size(); }
 	std::uint32_t								AssetCount() const;
-	__INLINE bool								StaticVectorBreak() const						{ return (m_staticVectorBreaksLL) ? true : false; };
-	__INLINE const XY_PolyLLSetBB<_type>		*StaticVectorBreak(std::uint32_t index) const	{ return (*m_staticVectorBreaksLL)[index]; };
+	bool								StaticVectorBreak() const						{ return (m_staticVectorBreaksLL) ? true : false; };
+	const XY_PolyLLSetBB<_type>		*StaticVectorBreak(std::uint32_t index) const	{ return (*m_staticVectorBreaksLL)[index]; };
 
 	bool IsNonFuel(const WTime &time, const XYPointType &pt, bool &valid) const;
 	bool IsNonFuelUTM(const WTime& time, const XYPointType& pt, bool& valid) const;

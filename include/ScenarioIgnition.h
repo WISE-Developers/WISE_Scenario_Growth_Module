@@ -42,8 +42,8 @@ class IgnitionNode : public MinNode {
 	IgnitionNode(const IgnitionNode<_type> &toCopy, WTimeManager *tm);
 	~IgnitionNode() = default;
 
-	__INLINE IgnitionNode<_type> *LN_Succ() const			{ return (IgnitionNode<_type>*)MinNode::LN_Succ(); };
-	__INLINE IgnitionNode<_type> *LN_Pred() const			{ return (IgnitionNode<_type>*)MinNode::LN_Pred(); };
+	IgnitionNode<_type> *LN_Succ() const			{ return (IgnitionNode<_type>*)MinNode::LN_Succ(); };
+	IgnitionNode<_type> *LN_Pred() const			{ return (IgnitionNode<_type>*)MinNode::LN_Pred(); };
 
 	void Reset(const WTime& startTimeOverride, const WTimeSpan &dt);
 

@@ -37,7 +37,7 @@ FireFront<_type>::FireFront() {
 
 template<class _type>
 FireFront<_type>::FireFront(const FireFront<_type>::XYPolyConstType &ff) : FireFrontStats<_type>(ff) {
-	weak_assert(0);				// shouldn't ever be called
+	weak_assert(false);				// shouldn't ever be called
 }
 
 

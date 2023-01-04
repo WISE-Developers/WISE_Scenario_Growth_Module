@@ -80,16 +80,16 @@ public:
 	FireFront(const ScenarioFire<_type> *fire, const FireFront<_type> &toCopy);
 	virtual ~FireFront() = default;
 
-	__INLINE FireFront<_type> *LN_Succ() const				{ return (FireFront<_type>*)FireFrontStats<_type>::LN_Succ(); };
-	__INLINE FireFront<_type> *LN_Pred() const				{ return (FireFront<_type>*)FireFrontStats<_type>::LN_Pred(); };
+	FireFront<_type> *LN_Succ() const				{ return (FireFront<_type>*)FireFrontStats<_type>::LN_Succ(); };
+	FireFront<_type> *LN_Pred() const				{ return (FireFront<_type>*)FireFrontStats<_type>::LN_Pred(); };
 
-	__INLINE FirePoint<_type> *LH_Head() const				{ return static_cast<FirePoint<_type>*>(XY_PolyLL_BaseTempl<_type>::LH_Head()); }
-	__INLINE FirePoint<_type> *LH_Tail() const				{ return static_cast<FirePoint<_type>*>(XY_PolyLL_BaseTempl<_type>::LH_Tail()); }
+	FirePoint<_type> *LH_Head() const				{ return static_cast<FirePoint<_type>*>(XY_PolyLL_BaseTempl<_type>::LH_Head()); }
+	FirePoint<_type> *LH_Tail() const				{ return static_cast<FirePoint<_type>*>(XY_PolyLL_BaseTempl<_type>::LH_Tail()); }
 
 	virtual FirePoint<_type> *New() const override;
 	virtual const XYPolyNodeType *ChooseToKeep(const XYPolyNodeType *first, const XYPolyNodeType *second) const override;
 
-	__INLINE const ScenarioFire<_type> *Fire() const			{ return FireFrontStats<_type>::m_fire; };
+	const ScenarioFire<_type> *Fire() const			{ return FireFrontStats<_type>::m_fire; };
 
 	FirePoint<_type> *GetNearestPoint(const XYPointType &pt, bool all_points);
 
@@ -135,8 +135,8 @@ public:
 	FireFrontExport(const ScenarioFire<_type> *fire, const FireFront<_type> &toCopy) : FireFront<_type>(fire, toCopy), m_time((std::uint64_t)0, nullptr), m_assetTime((std::uint64_t)0, false), m_assetCount(0)
 									{ m_origScenarioFire = nullptr; m_origArea = m_origPerimeter = m_origExteriorPerimeter = m_origActivePerimeter = m_origDistance = -1.0; }
 
-	__INLINE FireFrontExport<_type> *LN_Succ() const			{ return (FireFrontExport<_type>*)FireFront<_type>::LN_Succ(); };
-	__INLINE FireFrontExport<_type> *LN_Pred() const			{ return (FireFrontExport<_type>*)FireFront<_type>::LN_Pred(); };
+	FireFrontExport<_type> *LN_Succ() const			{ return (FireFrontExport<_type>*)FireFront<_type>::LN_Succ(); };
+	FireFrontExport<_type> *LN_Pred() const			{ return (FireFrontExport<_type>*)FireFront<_type>::LN_Pred(); };
 
 	virtual double MaximumBurnDistance() const;
 

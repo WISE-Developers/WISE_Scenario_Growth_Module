@@ -321,7 +321,7 @@ std::uint32_t ScenarioExportRules::GetTextAttributeMaxLength(const TCHAR *attrib
 			if (boost::iequals(attribute, r->name)) {
 				std::string rvalue;
 				bool failed = false;
-				try { rvalue = std::get<std::string>(r->value); } catch (std::bad_variant_access &) { weak_assert(0); failed = true; };
+				try { rvalue = std::get<std::string>(r->value); } catch (std::bad_variant_access &) { weak_assert(false); failed = true; };
 
 				if (!failed) {
 					size_t len = rvalue.length();
@@ -357,7 +357,7 @@ ExportRule *ScenarioExportRules::GetNextTextAttributeName(std::uint32_t &counter
 				if (i == names.size()) {
 					std::string rvalue;
 					bool failed = false;
-					try { rvalue = std::get<std::string>(r->value); } catch (std::bad_variant_access &) { weak_assert(0); failed = true; };
+					try { rvalue = std::get<std::string>(r->value); } catch (std::bad_variant_access &) { weak_assert(false); failed = true; };
 					
 					size_t max_value_length;
 					if (!failed)
@@ -375,7 +375,7 @@ ExportRule *ScenarioExportRules::GetNextTextAttributeName(std::uint32_t &counter
 								std::string rvalue2;
 								bool failed = false;
 								try { rvalue2 = std::get<std::string>(r->value); }
-								catch (std::bad_variant_access &) { weak_assert(0); failed = true; };
+								catch (std::bad_variant_access &) { weak_assert(false); failed = true; };
 
 								if (!failed) {
 									size_t len = rvalue2.length();

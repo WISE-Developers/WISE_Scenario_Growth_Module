@@ -50,10 +50,10 @@ public:
 	FirePoint(const FirePoint<_type> &fp);						// for all constructors, all STATS's are automatically cleared when creating a new FirePoint
 	~FirePoint();
 
-	__INLINE FirePoint<_type> *LN_Succ() const				{ return (FirePoint<_type>*)XY_PolyLLNode<_type>::LN_Succ(); };
-	__INLINE FirePoint<_type> *LN_Pred() const				{ return (FirePoint<_type>*)XY_PolyLLNode<_type>::LN_Pred(); };
-	__INLINE FirePoint<_type> *LN_SuccWrap() const			{ return (FirePoint<_type>*)XY_PolyLLNode<_type>::LN_SuccWrap(); };
-	__INLINE FirePoint<_type> *LN_PredWrap() const			{ return (FirePoint<_type>*)XY_PolyLLNode<_type>::LN_PredWrap(); };
+	FirePoint<_type> *LN_Succ() const				{ return (FirePoint<_type>*)XY_PolyLLNode<_type>::LN_Succ(); };
+	FirePoint<_type> *LN_Pred() const				{ return (FirePoint<_type>*)XY_PolyLLNode<_type>::LN_Pred(); };
+	FirePoint<_type> *LN_SuccWrap() const			{ return (FirePoint<_type>*)XY_PolyLLNode<_type>::LN_SuccWrap(); };
+	FirePoint<_type> *LN_PredWrap() const			{ return (FirePoint<_type>*)XY_PolyLLNode<_type>::LN_PredWrap(); };
 
 	#define FP_FLAG_NORMAL			0			// the point is happily growing along
 	#define FP_FLAG_NO_ROS			1			// the point stopped because the fuel (which was valid) couldn't support any ROS (like D2 with greenup and low BUI)
@@ -63,9 +63,9 @@ public:
 	#define FP_FLAG_NOWIND			5			// this is specific to a point being stopped because we were supposed to aim the point at a target, but
 												// we failed to get the target to aim at
 
-	__INLINE FirePoint &operator=(const XYPointType &pt)	{ if (&pt != this) { XYPointType::x = pt.x; XYPointType::y = pt.y; } return *this; };
+	FirePoint &operator=(const XYPointType &pt)	{ if (&pt != this) { XYPointType::x = pt.x; XYPointType::y = pt.y; } return *this; };
 
-	__INLINE bool CanMove() const							{ if (m_status) return false; if ((m_ellipse_ros.x == 0.0) && (m_ellipse_ros.y)) return false; return true; }
+	bool CanMove() const							{ if (m_status) return false; if ((m_ellipse_ros.x == 0.0) && (m_ellipse_ros.y)) return false; return true; }
 
 	FirePoint<_type>	*m_prevPoint, *m_succPoint;
 	XYVectorType		m_ellipse_ros;
