@@ -262,7 +262,7 @@ GustingOptions<_type>* GustingOptions<_type>::deserialize(const google::protobuf
 			/// </summary>
 			/// <type>internal</type>
 			valid->add_child_validation("WISE.FireEngineProto.CwfgmScenario.GustingOptions", name, validation::error_level::SEVERE, validation::id::object_invalid, proto.GetDescriptor()->name());
-		weak_assert(0);
+		weak_assert(false);
 		throw ISerializeProto::DeserializeError("WISE.FireEngineProto.CwfgmScenario.GustingOptions: Protobuf object invalid", ERROR_PROTOBUF_OBJECT_INVALID);
 	}
 	if (gusting->version() != 1)
@@ -273,7 +273,7 @@ GustingOptions<_type>* GustingOptions<_type>::deserialize(const google::protobuf
 			/// </summary>
 			/// <type>user</type>
 			valid->add_child_validation("WISE.FireEngineProto.CwfgmScenario.GustingOptions", name, validation::error_level::SEVERE, validation::id::version_mismatch, std::to_string(gusting->version()));
-		weak_assert(0);
+		weak_assert(false);
 		throw ISerializeProto::DeserializeError("WISE.FireEngineProto.CwfgmScenario.GustingOptions: Version is invalid", ERROR_PROTOBUF_OBJECT_VERSION_INVALID);
 	}
 

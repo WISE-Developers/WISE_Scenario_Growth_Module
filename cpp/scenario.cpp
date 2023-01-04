@@ -179,7 +179,7 @@ HRESULT Scenario<_type>::Step() {
 			try { 
 				ll.x = static_cast<_type>(std::get<double>(v));
 			} catch (std::bad_variant_access &) { 
-				weak_assert(0);
+				weak_assert(false);
 				return ERROR_SCENARIO_BAD_STATE;
 			};
 
@@ -187,7 +187,7 @@ HRESULT Scenario<_type>::Step() {
 			try { 
 				ll.y = static_cast<_type>(std::get<double>(v));
 			} catch (std::bad_variant_access &) { 
-				weak_assert(0);
+				weak_assert(false);
 				return ERROR_SCENARIO_BAD_STATE;
 			};
 
@@ -195,7 +195,7 @@ HRESULT Scenario<_type>::Step() {
 			try { 
 				ur.x = static_cast<_type>(std::get<double>(v));
 			} catch (std::bad_variant_access &) { 
-				weak_assert(0);
+				weak_assert(false);
 				return ERROR_SCENARIO_BAD_STATE;
 			};
 
@@ -203,7 +203,7 @@ HRESULT Scenario<_type>::Step() {
 			try { 
 				ur.y = static_cast<_type>(std::get<double>(v));
 			} catch (std::bad_variant_access &) { 
-				weak_assert(0);
+				weak_assert(false);
 				return ERROR_SCENARIO_BAD_STATE;
 			};
 
@@ -741,7 +741,7 @@ HRESULT Scenario<_type>::StepBack() {
 			remove_display++;
 			sts = m_timeSteps.LH_Tail();
 		} else {
-			weak_assert(0);					// why would this ever happen
+			weak_assert(false);					// why would this ever happen
 			sts = sts->LN_Pred();
 		}
 	}
@@ -837,7 +837,7 @@ ScenarioTimeStep<_type>* Scenario<_type>::GetPreviousDisplayStep(ScenarioTimeSte
 		}
 		sss = sss->LN_Pred();
 	}
-	weak_assert(0);
+	weak_assert(false);
 	return nullptr;
 }
 
@@ -1071,7 +1071,7 @@ bool ScenarioFireExport<_type>::setExportFields(const TCHAR *driver_name, OGRFea
 					str = std::get<std::string>(r->value);
 				}
 				catch (std::bad_variant_access &) {
-					weak_assert(0);
+					weak_assert(false);
 				}
 				OGR_F_SetFieldString(feature, index, str.c_str());
 			}
@@ -1313,7 +1313,7 @@ HRESULT Scenario<_type>::Export(const CCWFGM_Ignition *ignition, WTime *start_ti
 	PolymorphicAttribute var;
 	if (FAILED(hr = m_scenario->m_gridEngine->GetAttribute(m_scenario->m_layerThread, CWFGM_GRID_ATTRIBUTE_SPATIALREFERENCE, &var))) return hr;
 	std::string projection;
-	try { projection = std::get<std::string>(var); } catch (std::bad_variant_access &) { weak_assert(0); return ERROR_PROJECTION_UNKNOWN; }; /*POLYMORPHIC*/
+	try { projection = std::get<std::string>(var); } catch (std::bad_variant_access &) { weak_assert(false); return ERROR_PROJECTION_UNKNOWN; }; /*POLYMORPHIC*/
 
 	CSemaphoreEngage lock(GDALClient::GDALClient::getGDALMutex(), true);
 
@@ -1521,7 +1521,7 @@ HRESULT Scenario<_type>::Export(const CCWFGM_Ignition *ignition, WTime *start_ti
 								line = nullptr;
 							} else {
 								if ((line) && (fp != ff->LH_Head()))
-									weak_assert(0);
+									weak_assert(false);
 								delete line;
 								line = nullptr;
 							}

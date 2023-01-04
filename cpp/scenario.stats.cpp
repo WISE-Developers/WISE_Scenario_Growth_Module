@@ -670,7 +670,7 @@ HRESULT Scenario<_type>::getCalculatedStats(XYPointType c_pt, const WTime& time,
 			longitude = DEGREE_TO_RADIAN(x1);
 			latitude = DEGREE_TO_RADIAN(y1);	
 		} else {
-			weak_assert(0);
+			weak_assert(false);
 			double x1 = m_coordinateConverter.xllcorner(), y1 = m_coordinateConverter.yllcorner();
 			m_coordinateConverter.SourceToLatlon(1, &x1, &y1, nullptr);
 			longitude = x1;
@@ -691,7 +691,7 @@ HRESULT Scenario<_type>::getCalculatedStats(XYPointType c_pt, const WTime& time,
 
 			hr = fuel->FMC(latitude, longitude, elev, (std::uint16_t)time.GetDayOfYear(WTIME_FORMAT_AS_LOCAL | WTIME_FORMAT_WITHDST), &overrides, &fmc);
 		} else {
-			weak_assert(0);
+			weak_assert(false);
 			hr = fuel->FMC(latitude, longitude, -99.0, (std::uint16_t)time.GetDayOfYear(WTIME_FORMAT_AS_LOCAL | WTIME_FORMAT_WITHDST), &overrides, &fmc);
 		}
 

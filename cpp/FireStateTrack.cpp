@@ -569,7 +569,7 @@ void FireFront<_type>::trackPointVector(const FirePoint<_type> *actual_fp, FireP
 				nn = nn->LN_Succ();
 			}
 			if (!nn->LN_Succ()) {						// if we got here, then what does that mean?...that means that we travelled the length of the line, plus the flamelength*1.5 for breaching
-				weak_assert(0);						// so we should have either been stopped by a fire break or left all the fire breaks to continue burning - i.e. exited the loop with one
+				weak_assert(false);						// so we should have either been stopped by a fire break or left all the fire breaks to continue burning - i.e. exited the loop with one
 			}								// of the above 'break' statements - so this is a bad case that needs to be investigated.
 		}
 	} else {

@@ -152,7 +152,7 @@ CCWFGM_Scenario::~CCWFGM_Scenario() {
 		delete fn;
 
 	if (m_impl->m_scenario) {
-		weak_assert(0);
+		weak_assert(false);
 		m_impl->unlockObjects(*this, NULL, (AssetNode<fireengine_float_type>*)~0);
 		delete m_impl->m_scenario;
 	}
@@ -173,7 +173,7 @@ HRESULT CCWFGM_Scenario::GetGridEngine(Layer **layerThread, boost::intrusive_ptr
 
 	*pVal = m_gridEngine;
 	*layerThread = m_layerThread;
-	if (!m_gridEngine)								{ weak_assert(0); return ERROR_GRID_UNINITIALIZED; }
+	if (!m_gridEngine)								{ weak_assert(false); return ERROR_GRID_UNINITIALIZED; }
 	return S_OK;
 }
 
@@ -190,7 +190,6 @@ HRESULT CCWFGM_Scenario::PutGridEngine(Layer *layerThread, ICWFGM_GridEngine *ne
 		if (pGridEngine.get()) {
 			m_gridEngine = pGridEngine;
 			m_layerThread = layerThread;
-			ICWFGM_CommonData* data = nullptr;
 			retval = S_OK;
 		}
 		else
@@ -408,16 +407,16 @@ HRESULT CCWFGM_Scenario::SetAttribute(std::uint16_t option, const PolymorphicAtt
 
 		case CWFGM_SCENARIO_OPTION_SPECIFIED_FMC:
 								if (FAILED(hr = VariantToDouble_(value, &dValue)))			return hr;
-								if (dValue < 0.0)										{ weak_assert(0); return E_INVALIDARG; }
-								if (dValue > 300.0)										{ weak_assert(0); return E_INVALIDARG; }
+								if (dValue < 0.0)										{ weak_assert(false); return E_INVALIDARG; }
+								if (dValue > 300.0)										{ weak_assert(false); return E_INVALIDARG; }
 								m_specifiedFMC = dValue;
 								m_bRequiresSave = true;
 								return S_OK;
 
 		case CWFGM_SCENARIO_OPTION_DEFAULT_ELEVATION:
 								if (FAILED(hr = VariantToDouble_(value, &dValue)))			return hr;
-								if (dValue < 0.0) if ((dValue != -99.0) && (dValue != -1.0))		{ weak_assert(0); return E_INVALIDARG; }
-								if (dValue > 7000.0)							{ weak_assert(0); return E_INVALIDARG; }
+								if (dValue < 0.0) if ((dValue != -99.0) && (dValue != -1.0))		{ weak_assert(false); return E_INVALIDARG; }
+								if (dValue > 7000.0)							{ weak_assert(false); return E_INVALIDARG; }
 								m_defaultElevation = dValue;
 								m_bRequiresSave = true;
 								return S_OK;
@@ -481,14 +480,14 @@ HRESULT CCWFGM_Scenario::SetAttribute(std::uint16_t option, const PolymorphicAtt
 
 		case CWFGM_SCENARIO_OPTION_IGNITIONS_DX:
 									if (FAILED(hr = VariantToDouble_(value, &dValue)))		return hr;
-									if ((dValue < -250.0) || (dValue > 250.0))			{ weak_assert(0); return E_INVALIDARG; }
+									if ((dValue < -250.0) || (dValue > 250.0))			{ weak_assert(false); return E_INVALIDARG; }
 									m_dx = dValue;
 									m_bRequiresSave = true;
 									return S_OK;
 
 		case CWFGM_SCENARIO_OPTION_IGNITIONS_DY:
 									if (FAILED(hr = VariantToDouble_(value, &dValue)))		return hr;
-									if ((dValue < -250.0) || (dValue > 250.0))			{ weak_assert(0); return E_INVALIDARG; }
+									if ((dValue < -250.0) || (dValue > 250.0))			{ weak_assert(false); return E_INVALIDARG; }
 									m_dy = dValue;
 									m_bRequiresSave = true;
 									return S_OK;
@@ -503,25 +502,25 @@ HRESULT CCWFGM_Scenario::SetAttribute(std::uint16_t option, const PolymorphicAtt
 
 		case CWFGM_SCENARIO_OPTION_IGNITIONS_DWD:
 									if (FAILED(hr = VariantToDouble_(value, &dValue)))		return hr;
-									if ((dValue < -360.0) || (dValue > 360.0))			{ weak_assert(0); return E_INVALIDARG; }
+									if ((dValue < -360.0) || (dValue > 360.0))			{ weak_assert(false); return E_INVALIDARG; }
 									m_dwd = dValue;
 									m_bRequiresSave = true;
 									return S_OK;
 
 		case CWFGM_SCENARIO_OPTION_IGNITIONS_OWD:					if (FAILED(hr = VariantToDouble_(value, &dValue)))		return hr;
-									if (((dValue != -1.0) && (dValue < 0.0)) || (dValue > 360.0)) { weak_assert(0); return E_INVALIDARG; }
+									if (((dValue != -1.0) && (dValue < 0.0)) || (dValue > 360.0)) { weak_assert(false); return E_INVALIDARG; }
 									m_owd = dValue;
 									m_bRequiresSave = true;
 									return S_OK;
 
 		case CWFGM_SCENARIO_OPTION_GRID_DVD:						if (FAILED(hr = VariantToDouble_(value, &dValue)))		return hr;
-									if ((dValue < -360.0) || (dValue > 360.0))			{ weak_assert(0); return E_INVALIDARG; }
+									if ((dValue < -360.0) || (dValue > 360.0))			{ weak_assert(false); return E_INVALIDARG; }
 									m_dvd = dValue;
 									m_bRequiresSave = true;
 									return S_OK;
 
 		case CWFGM_SCENARIO_OPTION_GRID_OVD:						if (FAILED(hr = VariantToDouble_(value, &dValue)))		return hr;
-									if (((dValue != -1.0) && (dValue < 0.0)) || (dValue > 360.0)) { weak_assert(0); return E_INVALIDARG; }
+									if (((dValue != -1.0) && (dValue < 0.0)) || (dValue > 360.0)) { weak_assert(false); return E_INVALIDARG; }
 									m_ovd = dValue;
 									m_bRequiresSave = true;
 									return S_OK;
@@ -1038,7 +1037,7 @@ HRESULT CCWFGM_Scenario::Simulation_State() {
 		return m_impl->m_scenario->m_stepState;
 	}
 
-	if (!m_gridEngine)										  { weak_assert(0); return ERROR_GRID_UNINITIALIZED; }
+	if (!m_gridEngine)										  { weak_assert(false); return ERROR_GRID_UNINITIALIZED; }
 	if (m_impl->m_ignitionList.IsEmpty())										return ERROR_SCENARIO_NO_FIRES;
 	if (!m_startTime.GetTime(0))												return ERROR_SCENARIO_BAD_TIMES;
 	if (!m_endTime.GetTime(0))													return ERROR_SCENARIO_BAD_TIMES;
@@ -1092,7 +1091,7 @@ HRESULT CCWFGM_Scenario::Simulation_State() {
 
 	PolymorphicAttribute var;
 	if (!m_timeManager) {
-		weak_assert(0);
+		weak_assert(false);
 		ICWFGM_CommonData* data;
 		if (FAILED(hr = m_gridEngine->GetCommonData(m_layerThread, &data)) || (!data))							goto DONE;
 		m_timeManager = data->m_timeManager;
@@ -1225,7 +1224,7 @@ HRESULT CCWFGM_Scenario::Simulation_Reset(std::shared_ptr<validation::validation
 	if (!m_gridEngine) {
 		if (valid)
 			valid->add_child_validation("WISE.FireEngineProto.CwfgmScenario", name, validation::error_level::WARNING, validation::id::initialization_incomplete, "grid_engine");
-		weak_assert(0);
+		weak_assert(false);
 		return ERROR_GRID_UNINITIALIZED;
 	}
 
@@ -1350,7 +1349,7 @@ HRESULT CCWFGM_Scenario::Simulation_Reset(std::shared_ptr<validation::validation
 			/// <type>internal</type>
 			v->add_child_validation("Simulation:Reset", "xllcorner", validation::error_level::SEVERE,
 				validation::id::cannot_convert_type, "");
-		weak_assert(0); m_impl->unlockObjects(*this, nullptr, (AssetNode<fireengine_float_type>*)~0);
+		weak_assert(false); m_impl->unlockObjects(*this, nullptr, (AssetNode<fireengine_float_type>*)~0);
 		goto DONE;
 	}
 
@@ -1376,7 +1375,7 @@ HRESULT CCWFGM_Scenario::Simulation_Reset(std::shared_ptr<validation::validation
 			/// <type>internal</type>
 			v->add_child_validation("Simulation:Reset", "yllcorner", validation::error_level::SEVERE,
 				validation::id::cannot_convert_type, "");
-		weak_assert(0); m_impl->unlockObjects(*this, nullptr, (AssetNode<fireengine_float_type>*)~0);
+		weak_assert(false); m_impl->unlockObjects(*this, nullptr, (AssetNode<fireengine_float_type>*)~0);
 		goto DONE;
 	}
 
@@ -1402,7 +1401,7 @@ HRESULT CCWFGM_Scenario::Simulation_Reset(std::shared_ptr<validation::validation
 			/// <type>internal</type>
 			v->add_child_validation("Simulation:Reset", "xurcorner", validation::error_level::SEVERE,
 				validation::id::cannot_convert_type, "");
-		weak_assert(0); m_impl->unlockObjects(*this, nullptr, (AssetNode<fireengine_float_type>*)~0);
+		weak_assert(false); m_impl->unlockObjects(*this, nullptr, (AssetNode<fireengine_float_type>*)~0);
 		goto DONE;
 	}
 
@@ -1428,7 +1427,7 @@ HRESULT CCWFGM_Scenario::Simulation_Reset(std::shared_ptr<validation::validation
 			/// <type>internal</type>
 			v->add_child_validation("Simulation:Reset", "yurcorner", validation::error_level::SEVERE,
 				validation::id::cannot_convert_type, "");
-		weak_assert(0); m_impl->unlockObjects(*this, nullptr, (AssetNode<fireengine_float_type>*)~0);
+		weak_assert(false); m_impl->unlockObjects(*this, nullptr, (AssetNode<fireengine_float_type>*)~0);
 		goto DONE;
 	}
 
@@ -1454,7 +1453,7 @@ HRESULT CCWFGM_Scenario::Simulation_Reset(std::shared_ptr<validation::validation
 			/// <type>internal</type>
 			v->add_child_validation("Simulation:Reset", "resolution", validation::error_level::SEVERE,
 				validation::id::cannot_convert_type, "");
-		weak_assert(0); m_impl->unlockObjects(*this, nullptr, (AssetNode<fireengine_float_type>*)~0);
+		weak_assert(false); m_impl->unlockObjects(*this, nullptr, (AssetNode<fireengine_float_type>*)~0);
 		goto DONE;
 	}
 
@@ -1491,7 +1490,7 @@ HRESULT CCWFGM_Scenario::Simulation_Reset(std::shared_ptr<validation::validation
 		elev = -1.0;
 
 	if (m_impl->m_scenario) {
-		weak_assert(0);
+		weak_assert(false);
 		delete m_impl->m_scenario;
 	}
 

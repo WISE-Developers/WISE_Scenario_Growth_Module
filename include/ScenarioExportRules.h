@@ -40,8 +40,8 @@ class FIRECOM_API ExportRule : public MinNode, public SExportRule {
 	ExportRule(const ExportRule& rule);
 	~ExportRule() = default;
 
-	__INLINE ExportRule *LN_Succ() const			{ return (ExportRule *)MinNode::LN_Succ(); };
-	__INLINE ExportRule *LN_Pred() const			{ return (ExportRule *)MinNode::LN_Pred(); };
+	ExportRule *LN_Succ() const			{ return (ExportRule *)MinNode::LN_Succ(); };
+	ExportRule *LN_Pred() const			{ return (ExportRule *)MinNode::LN_Pred(); };
 
 	DECLARE_OBJECT_CACHE_MT(ExportRule, ExportRule)
 };

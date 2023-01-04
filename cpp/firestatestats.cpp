@@ -364,7 +364,7 @@ HRESULT FireFrontStats<_type>::RetrieveStat(const std::uint16_t stat, double *st
 		case CWFGM_FIRE_STAT_MAXIMUM_BURN_DISTANCE:	*stats = MaximumBurnDistance();			return S_OK;
 	}
 	*stats = 0.0;
-	weak_assert(0);
+	weak_assert(false);
 	return ERROR_FIRE_STAT_UNKNOWN;
 }
 
