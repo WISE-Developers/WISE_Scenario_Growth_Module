@@ -142,6 +142,7 @@ target_link_libraries(fireengine ${FOUND_GDAL_LIBRARY_PATH} ${Boost_LIBRARIES} $
 target_link_libraries(fireengine ${FOUND_FWI_LIBRARY_PATH} ${FOUND_FUEL_LIBRARY_PATH} ${FOUND_GRID_LIBRARY_PATH} ${FOUND_REDAPP_LIBRARY_PATH} ${FOUND_WEATHER_LIBRARY_PATH})
 target_link_libraries(fireengine ${FOUND_WTIME_LIBRARY_PATH} ${FOUND_LOWLEVEL_LIBRARY_PATH} ${FOUND_MULTITHREAD_LIBRARY_PATH} ${FOUND_ERROR_CALC_LIBRARY_PATH} ${FOUND_MATH_LIBRARY_PATH} ${FOUND_GEOGRAPHY_LIBRARY_PATH})
 if (MSVC)
+target_link_directories(fireengine PUBLIC ${LOCAL_LIBRARY_DIR})
 else ()
 target_link_libraries(fireengine -lstdc++fs)
 endif (MSVC)
