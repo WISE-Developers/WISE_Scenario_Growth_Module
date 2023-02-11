@@ -128,8 +128,8 @@ public:
 
 	HRESULT GetStats(const XY_Point &min_utmpt, const XY_Point& max_utmpt, const XYPointType& pt1, const XYPointType& pt2, WTime* mintime, WTime* time, std::uint16_t stat_cnt, std::uint16_t* stats_array, NumericVariant* vstats, bool only_displayable, std::uint32_t technique, std::uint16_t discretize, bool test);
 
-	HRESULT Export(const CCWFGM_Ignition *set, WTime *start_time, WTime *end_time, std::uint16_t flags, const TCHAR *driver_name, const TCHAR *projection, const TCHAR *file_path, const ScenarioExportRules &rules, ScenarioTimeStep<_type> *_sts = nullptr) const;
-	HRESULT ExportCriticalPath(const AssetNode<_type>* node, const AssetGeometryNode<_type>* g, const std::uint16_t flags, const TCHAR* driver_name, const TCHAR* csProjection, const TCHAR* file_path, const ScenarioExportRules& rules) const;
+	HRESULT Export(const CCWFGM_Ignition *set, WTime *start_time, WTime *end_time, std::uint16_t flags, std::string_view driver_name, const std::string &projection, const std::filesystem::path &file_path, const ScenarioExportRules& rules, ScenarioTimeStep<_type>* _sts = nullptr) const;
+	HRESULT ExportCriticalPath(const AssetNode<_type>* node, const AssetGeometryNode<_type>* g, const std::uint16_t flags, std::string_view driver_name, const std::string& csProjection, const std::filesystem::path& file_path, const ScenarioExportRules& rules) const;
 	HRESULT BuildCriticalPath(const AssetNode<_type>* node, const AssetGeometryNode<_type>* g, const std::uint16_t flags, CriticalPath* polyset, const ScenarioExportRules* rules) const;
 
 	std::vector<class FirePoint<_type>*>	m_omp_fp_array;

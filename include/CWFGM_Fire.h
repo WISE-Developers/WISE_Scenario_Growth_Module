@@ -55,7 +55,7 @@ public:
 class SerializeIgnitionData : public ISerializationData
 {
 public:
-	std::vector<std::string> *permissible_drivers;
+	std::vector<std::string_view> *permissible_drivers;
 };
 
 
@@ -298,7 +298,7 @@ public:
 		\retval ERROR_IGNITION_UNINITIALIZED Specified grid is invalid or not provided
 		\retval ERROR_FIRE_IGNITION_TYPE_UNKNOWN Unknown ignition type (not point, line, polygon)
 	*/
-	virtual NO_THROW HRESULT ImportIgnition(const std::string &file_name, const std::vector<std::string> *permissible_drivers, const std::vector<std::string>* attribute_name);
+	virtual NO_THROW HRESULT ImportIgnition(const std::filesystem::path &file_name, const std::vector<std::string_view> &permissible_drivers, const std::vector<std::string>* attribute_name);
 	/** Imports an ignition from the WFS URL specified.
 		\param	url		Identifies the WFS provider.
 		\param	layer	Identifies the layer in the WFS provider.
@@ -327,7 +327,7 @@ public:
 		\retval ERROR_SEVERITY_WARNING Unspecified failure
 		\retval ERROR_IGNITION_UNINITIALIZED Specified grid is invalid or not provided
 	*/
-	virtual NO_THROW HRESULT ExportIgnition(const std::string &driver_name, const std::string &projection, const std::string &file_name);
+	virtual NO_THROW HRESULT ExportIgnition(std::string_view driver_name, const std::string &projection, const std::filesystem::path &file_name);
 	/** Exports the ignition to the specified file path.
 		\param	url		Identifies the WFS provider.
 		\param	layer	Identifies the layer in the WFS provider.
