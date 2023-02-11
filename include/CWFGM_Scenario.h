@@ -856,8 +856,8 @@ public:
 		\retval S_FALSE Unspecified error
 		\retval E_FAIL Unspecidifed error
 	*/
-	virtual NO_THROW HRESULT ExportFires(const CCWFGM_Ignition *set, HSS_Time::WTime &start_time, HSS_Time::WTime &end_time, std::uint16_t flags,const std::string &driver_name, const std::string &projection, const std::string &file_path, const class ScenarioExportRules *rules) const;
-	virtual NO_THROW HRESULT ExportCriticalPath(const ICWFGM_Asset* asset, const std::uint32_t index, const std::uint16_t flags, const std::string& driver_name, const std::string& projection, const std::string& file_path, const ScenarioExportRules* rules) const;
+	virtual NO_THROW HRESULT ExportFires(const CCWFGM_Ignition *set, HSS_Time::WTime &start_time, HSS_Time::WTime &end_time, std::uint16_t flags,std::string_view driver_name, const std::string &projection, const std::filesystem::path &file_path, const class ScenarioExportRules *rules) const;
+	virtual NO_THROW HRESULT ExportCriticalPath(const ICWFGM_Asset* asset, const std::uint32_t index, const std::uint16_t flags, std::string_view driver_name, const std::string& projection, const std::filesystem::path& file_path, const ScenarioExportRules* rules) const;
 	virtual NO_THROW HRESULT BuildCriticalPath(const ICWFGM_Asset* asset, const std::uint32_t index, const std::uint16_t flags, MinListTempl<CriticalPath>& polyset, const ScenarioExportRules* rules) const;
 
 	virtual NO_THROW HRESULT GetPercentileClassCount(unsigned char *count);

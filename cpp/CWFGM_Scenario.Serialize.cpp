@@ -42,17 +42,17 @@
 
 
 HRESULT CCWFGM_Scenario::ExportFires(const CCWFGM_Ignition *set, HSS_Time::WTime &start_time, HSS_Time::WTime &end_time, std::uint16_t flags,
-    const std::string &driver_name, const std::string &projection, const std::string &file_path, const ScenarioExportRules *rules) const {
+    std::string_view driver_name, const std::string &projection, const std::filesystem::path &file_path, const ScenarioExportRules *rules) const {
 	if ((!start_time.GetTotalMicroSeconds()) || (!end_time.GetTotalMicroSeconds()))			return ERROR_FIRE_INVALID_TIME;
 	if (!driver_name.length())								return E_POINTER;
-	if (!file_path.length())									return E_POINTER;
+	if (file_path.empty())									return E_POINTER;
 
 	CRWThreadSemaphoreEngage _semaphore_engage(const_cast<CRWThreadSemaphore &>(m_lock), SEM_FALSE);
 
 	if (m_impl->m_scenario) {
 		WTime st(start_time, m_timeManager), et(end_time, m_timeManager);
 		ScenarioExportRules rr;
-		HRESULT hr = m_impl->m_scenario->Export(set, &st, &et, flags, driver_name.c_str(), projection.c_str(), file_path.c_str(), *rules);
+		HRESULT hr = m_impl->m_scenario->Export(set, &st, &et, flags, driver_name, projection, file_path, *rules);
 		if (SUCCEEDED(hr)) {
 			start_time.SetTime(st);
 			end_time.SetTime(et);
@@ -64,9 +64,9 @@ HRESULT CCWFGM_Scenario::ExportFires(const CCWFGM_Ignition *set, HSS_Time::WTime
 
 
 HRESULT CCWFGM_Scenario::ExportCriticalPath(const ICWFGM_Asset* asset, const std::uint32_t index, const std::uint16_t flags,
-	const std::string& driver_name, const std::string& projection, const std::string& file_path, const ScenarioExportRules* rules) const {
+	std::string_view driver_name, const std::string& projection, const std::filesystem::path& file_path, const ScenarioExportRules* rules) const {
 	if (!driver_name.length())									return E_POINTER;
-	if (!file_path.length())									return E_POINTER;
+	if (file_path.empty())										return E_POINTER;
 
 	CRWThreadSemaphoreEngage _semaphore_engage(const_cast<CRWThreadSemaphore&>(m_lock), SEM_FALSE);
 
@@ -94,7 +94,7 @@ HRESULT CCWFGM_Scenario::ExportCriticalPath(const ICWFGM_Asset* asset, const std
 				if (!g)
 					return ERROR_SCENARIO_ASSET_GEOMETRY_UNKNOWN;
 			}
-			return m_impl->m_scenario->ExportCriticalPath(node, g, flags, driver_name.c_str(), projection.c_str(), file_path.c_str(), *rules);
+			return m_impl->m_scenario->ExportCriticalPath(node, g, flags, driver_name, projection, file_path, *rules);
 		}
 		node = node->LN_Succ();
 	}

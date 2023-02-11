@@ -42,7 +42,6 @@
 #ifdef __GNUC__
 #define BOOST_CHRONO_HEADER_ONLY
 #endif
-#include "boost_ll_config.h"
 #include <boost/chrono.hpp>
 
 #ifdef _MSC_VER
@@ -1305,7 +1304,7 @@ public:
 
 template<class _type>
 HRESULT Scenario<_type>::Export(const CCWFGM_Ignition *ignition, WTime *start_time, WTime *end_time, std::uint16_t flags,
-	const TCHAR *driver_name, const TCHAR *csProjection, const TCHAR *file_path,
+	std::string_view driver_name, const std::string &csProjection, const std::filesystem::path &file_path,
     const ScenarioExportRules &rules, ScenarioTimeStep<_type> *_sts) const {
 	CRWThreadSemaphoreEngage _semaphore_engage(*(CRWThreadSemaphore *)&m_llLock, SEM_FALSE);
 
@@ -1318,7 +1317,7 @@ HRESULT Scenario<_type>::Export(const CCWFGM_Ignition *ignition, WTime *start_ti
 	CSemaphoreEngage lock(GDALClient::GDALClient::getGDALMutex(), true);
 
 	OGRSpatialReferenceH oSourceSRS = CCoordinateConverter::CreateSpatialReferenceFromWkt(projection.c_str());
-	OGRSpatialReferenceH oTargetSRS = CCoordinateConverter::CreateSpatialReferenceFromStr(csProjection);
+	OGRSpatialReferenceH oTargetSRS = CCoordinateConverter::CreateSpatialReferenceFromStr(csProjection.c_str());
 
 	ScenarioTimeStep<_type> *sts;
 	if (!_sts) {
@@ -1668,7 +1667,9 @@ HRESULT Scenario<_type>::BuildCriticalPath(const AssetNode<_type>* node, const A
 
 
 template<class _type>
-HRESULT Scenario<_type>::ExportCriticalPath(const AssetNode<_type>* node, const AssetGeometryNode<_type>* g, const std::uint16_t flags, const TCHAR* driver_name, const TCHAR* csProjection, const TCHAR* file_path, const ScenarioExportRules& rules) const {
+HRESULT Scenario<_type>::ExportCriticalPath(const AssetNode<_type>* node, const AssetGeometryNode<_type>* g, const std::uint16_t flags,
+	std::string_view driver_name, const std::string &csProjection, const std::filesystem::path &file_path,
+	const ScenarioExportRules& rules) const {
 	if (g) {
 	if (!g->m_arrived)
 		return ERROR_SCENARIO_ASSET_NOT_ARRIVED;
@@ -1680,7 +1681,7 @@ HRESULT Scenario<_type>::ExportCriticalPath(const AssetNode<_type>* node, const 
 	std::string projection = std::get<std::string>(var);
 
 	OGRSpatialReferenceH oSourceSRS = CCoordinateConverter::CreateSpatialReferenceFromWkt(projection.c_str());
-	OGRSpatialReferenceH oTargetSRS = CCoordinateConverter::CreateSpatialReferenceFromStr(csProjection);
+	OGRSpatialReferenceH oTargetSRS = CCoordinateConverter::CreateSpatialReferenceFromStr(csProjection.c_str());
 
 	CriticalPath polyset;
 	if (g) {

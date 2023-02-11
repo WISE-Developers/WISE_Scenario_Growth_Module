@@ -39,31 +39,17 @@
 using namespace HSS_Time;
 
 
-HRESULT CCWFGM_Ignition::ImportIgnition(const std::string &file_path, const std::vector<std::string> *permissible_drivers, const std::vector<std::string>* attribute_names) {
-	if (!file_path.length())						return ERROR_IGNITION_UNINITIALIZED;
+HRESULT CCWFGM_Ignition::ImportIgnition(const std::filesystem::path &file_path, const std::vector<std::string_view> &permissible_drivers, const std::vector<std::string>* attribute_names) {
+	if (file_path.empty())							return ERROR_IGNITION_UNINITIALIZED;
 	if (!m_gridEngine)								return ERROR_GRID_UNINITIALIZED;
-
-	const char **pd;
-	if (permissible_drivers && permissible_drivers->size() > 0) {
-		pd = (const char **)malloc(sizeof(char *) * (size_t)(permissible_drivers->size() + 1));
-		if (!pd)
-			return E_OUTOFMEMORY;
-		std::uint32_t i;
-		for (i = 0; i < (std::uint32_t)permissible_drivers->size(); i++) {
-			pd[i] = strdup((*permissible_drivers)[i].c_str());
-		}
-		pd[i] = nullptr;
-	}
-	else pd = nullptr;
 
 	HRESULT hr;
 	PolymorphicAttribute var;
 
-	if (FAILED(hr = m_gridEngine->GetAttribute(0, CWFGM_GRID_ATTRIBUTE_SPATIALREFERENCE, &var)))	{ if (pd) { std::uint32_t i = 0; while (pd[i]) free((APTR)pd[i++]); free(pd); } return hr; }
+	if (FAILED(hr = m_gridEngine->GetAttribute(0, CWFGM_GRID_ATTRIBUTE_SPATIALREFERENCE, &var)))	{ return hr; }
 	std::string projection;
 	try { projection = std::get<std::string>(var); } catch (std::bad_variant_access &) {
 		weak_assert(false);
-		if (pd) { std::uint32_t i = 0; while (pd[i]) free((APTR)pd[i++]); free(pd); }
 		return ERROR_PROJECTION_UNKNOWN;
 	} /*POLYMORPHIC*/
 
@@ -73,13 +59,12 @@ HRESULT CCWFGM_Ignition::ImportIgnition(const std::string &file_path, const std:
 
 	XY_PolyLLSetAttributes set;
 	set.SetCacheScale(m_resolution);
-	hr = set.ImportPoly(pd, file_path.c_str(), oSourceSRS, nullptr, nullptr, attribute_names);
+	hr = set.ImportPoly(permissible_drivers, file_path, oSourceSRS, nullptr, nullptr, attribute_names);
 	if (oSourceSRS)
 		CCoordinateConverter::DestroySpatialReference(oSourceSRS);
 
 	if (SUCCEEDED(hr)) {
 		if (set.IsEmpty()) {
-			if (pd) { std::uint32_t i = 0; while (pd[i]) free((APTR)pd[i++]); free(pd); }
 			return ERROR_FIRE_IGNITION_TYPE_UNKNOWN;
 		}
 
@@ -149,7 +134,6 @@ HRESULT CCWFGM_Ignition::ImportIgnition(const std::string &file_path, const std:
 		}
 		m_bRequiresSave = true;
 	}
-	if (pd) { std::uint32_t i = 0; while (pd[i]) free((APTR)pd[i++]); free(pd); }
 	return hr;
 }
 
@@ -188,7 +172,8 @@ HRESULT CCWFGM_Ignition::ImportIgnitionWFS(const std::string &url, const std::st
 	layers.push_back(layer);
 	XY_PolyLLSet pset;
 	std::string URI = prepareUri(url);
-	hr = set.ImportPoly(nullptr, URI.c_str(), oSourceSRS, nullptr, &layers);
+	const std::vector<std::string_view> drivers;
+	hr = set.ImportPoly(drivers, URI.c_str(), oSourceSRS, nullptr, &layers);
 
 	if (oSourceSRS)
 		OSRDestroySpatialReference(oSourceSRS);
@@ -250,8 +235,8 @@ HRESULT CCWFGM_Ignition::ImportIgnitionWFS(const std::string &url, const std::st
 }
 
 
-HRESULT CCWFGM_Ignition::ExportIgnition(const std::string &driver_name, const std::string &bprojection, const std::string &file_path) {
-	if ((!driver_name.length()) || (!file_path.length()))
+HRESULT CCWFGM_Ignition::ExportIgnition(std::string_view driver_name, const std::string& bprojection, const std::filesystem::path &file_path) {
+	if ((!driver_name.length()) || (file_path.empty()))
 		return E_INVALIDARG;
 	if (!m_gridEngine)								return ERROR_IGNITION_UNINITIALIZED;;
 
@@ -284,7 +269,7 @@ HRESULT CCWFGM_Ignition::ExportIgnition(const std::string &driver_name, const st
 
 	OGRSpatialReferenceH oSourceSRS = CCoordinateConverter::CreateSpatialReferenceFromWkt(projection.c_str());
 
-	hr = set.ExportPoly(driver_name.c_str(), file_path.c_str(), oSourceSRS, oTargetSRS);
+	hr = set.ExportPoly(driver_name, file_path, oSourceSRS, oTargetSRS);
 	if (oSourceSRS)
 		CCoordinateConverter::DestroySpatialReference(oSourceSRS);
 	if (oTargetSRS)
@@ -543,7 +528,8 @@ CCWFGM_Ignition *CCWFGM_Ignition::deserialize(const google::protobuf::Message& p
 			}
 
 			HRESULT hr;
-			hr = ImportIgnition(engine->filename(), sdata->permissible_drivers, (valid) ? &attributes : nullptr);
+			std::filesystem::path fname(engine->filename());
+			hr = ImportIgnition(fname, *sdata->permissible_drivers, (valid) ? &attributes : nullptr);
 
 			if (FAILED(hr)) {
 				switch (hr) {
