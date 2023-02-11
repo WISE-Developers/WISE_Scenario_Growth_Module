@@ -42,7 +42,6 @@
 #ifdef __GNUC__
 #define BOOST_CHRONO_HEADER_ONLY
 #endif
-#include "boost_ll_config.h"
 #include <boost/chrono.hpp>
 
 #ifdef _MSC_VER
