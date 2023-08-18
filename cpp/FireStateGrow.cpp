@@ -717,12 +717,14 @@ bool ScenarioTimeStep<_type>::CheckAssets(bool& make_displayable) {
 			an = an->LN_Succ();
 		}
 
-		if (m_scenario->m_scenario->m_globalAssetOperation == (std::uint32_t)-1) {
-			if (globalCount == fullCount)
-				exit = true;
-		} else if (m_scenario->m_scenario->m_globalAssetOperation > 0) {
-			if (globalCount >= m_scenario->m_scenario->m_globalAssetOperation)
-				exit = true;
+		if (globalCount) {
+			if (m_scenario->m_scenario->m_globalAssetOperation == (std::uint32_t)-1) {
+				if (globalCount == fullCount)
+					exit = true;
+			} else if (m_scenario->m_scenario->m_globalAssetOperation > 0) {
+				if (globalCount >= m_scenario->m_scenario->m_globalAssetOperation)
+					exit = true;
+			}
 		}
 	}
 
