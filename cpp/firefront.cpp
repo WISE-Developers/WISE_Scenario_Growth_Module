@@ -202,6 +202,21 @@ template<class _type>
 bool FireFront<_type>::AdvanceFire(const _type scale) {
 	EnableCaching(false);
 
+	/* DEBUG ONLY — REMOVE BEFORE SHIP */
+	{
+		static int _af_step = 0;
+		int _af_normal = 0, _af_stopped = 0;
+		FirePoint<_type> *_fp = LH_Head();
+		while (_fp->LN_Succ()) {
+			if (_fp->m_status == FP_FLAG_NORMAL) _af_normal++;
+			else _af_stopped++;
+			_fp = _fp->LN_Succ();
+		}
+		fprintf(stderr, "[AF#%d] npts=%d normal=%d stopped=%d scale=%.6f\n",
+			_af_step++, NumPoints(), _af_normal, _af_stopped, (double)scale);
+	}
+	/* END DEBUG ONLY */
+
 	bool advanced = false;
 	if ((NumPoints() > QUEUE_UP) && (Fire()->TimeStep()->m_scenario->m_pool)) {
 
