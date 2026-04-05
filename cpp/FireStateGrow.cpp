@@ -530,6 +530,13 @@ void FireFront<_type>::GrowPoints() {
 	gvs.target_idx = s->m_scenario->m_windTargetIndex;
 	gvs.target_sub_idx = s->m_scenario->m_windTargetSubIndex;
 
+	/* DEBUG ONLY — REMOVE BEFORE SHIP */
+	static int _gp_step = 0;
+	int _gp_fuel = 0, _gp_nofuel = 0, _gp_nofuel_invalid = 0, _gp_nofuel_null = 0;
+	int _gp_nofuel_isfuel = 0, _gp_already_stopped = 0;
+	double _gp_first_nf_x = 0, _gp_first_nf_y = 0;
+	/* END DEBUG VARS */
+
 	FirePoint<_type> *fp = LH_Head();
 	while (fp->LN_Succ()) {
 		if (fp->m_status == FP_FLAG_NORMAL) {
@@ -538,14 +545,31 @@ void FireFront<_type>::GrowPoints() {
 			bool result;
 			if ((valid) && (fuel) && (SUCCEEDED(fuel->IsNonFuel(&result))) && (!result)) {
 				fp->Grow(&gvs, fuel);
+				_gp_fuel++;  /* DEBUG ONLY */
 			} else {
 				fp->m_ellipse_ros.x = fp->m_ellipse_ros.y = 0.0;
 				fp->m_fbp_ros_ratio = 1.0;
 				fp->m_status = FP_FLAG_NOFUEL;
+				/* DEBUG ONLY — classify why */
+				if (!valid) _gp_nofuel_invalid++;
+				else if (!fuel) _gp_nofuel_null++;
+				else _gp_nofuel_isfuel++;  /* fuel->IsNonFuel returned true */
+				if (_gp_nofuel == 0) { _gp_first_nf_x = fp->x; _gp_first_nf_y = fp->y; }
+				_gp_nofuel++;
 				}
+		} else {
+			_gp_already_stopped++;  /* DEBUG ONLY */
 		}
 		fp = fp->LN_Succ();
 	}
+
+	/* DEBUG ONLY — REMOVE BEFORE SHIP
+	 * One line per internal step: fuel count, nofuel count, breakdown */
+	fprintf(stderr, "[GP#%d] fuel=%d nofuel=%d (invalid=%d null=%d isfuel=%d) stopped=%d first_nf=(%.4f,%.4f)\n",
+		_gp_step++, _gp_fuel, _gp_nofuel,
+		_gp_nofuel_invalid, _gp_nofuel_null, _gp_nofuel_isfuel,
+		_gp_already_stopped, _gp_first_nf_x, _gp_first_nf_y);
+	/* END DEBUG ONLY */
 }
 
 
