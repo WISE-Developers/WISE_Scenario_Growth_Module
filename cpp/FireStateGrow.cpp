@@ -537,6 +537,15 @@ void FireFront<_type>::GrowPoints() {
 	double _gp_first_nf_x = 0, _gp_first_nf_y = 0;
 	/* END DEBUG VARS */
 
+	/* FUEL-POS: for large polygons, log vertex positions and fuel status */
+	std::uint32_t _fp_npts = NumPoints();
+	bool _fp_large = (_fp_npts > 100);
+	int _fp_logged = 0;
+	if (_fp_large) {
+		fprintf(stderr, "[FUEL-POS-HDR] step=%d npts=%u\n", _gp_step, _fp_npts);
+		fflush(stderr);
+	}
+
 	FirePoint<_type> *fp = LH_Head();
 	while (fp->LN_Succ()) {
 		if (fp->m_status == FP_FLAG_NORMAL) {
@@ -544,6 +553,13 @@ void FireFront<_type>::GrowPoints() {
 			ICWFGM_Fuel *fuel = gvs.self_fire_timestep->m_scenario->GetFuel(gvs.self_fire_timestep->m_time, *fp, valid);
 			bool result;
 			if ((valid) && (fuel) && (SUCCEEDED(fuel->IsNonFuel(&result))) && (!result)) {
+				/* FUEL-POS: log first 5 valid-fuel vertices for large polygons */
+				if (_fp_large && _fp_logged < 5) {
+					fprintf(stderr, "[FUEL-POS] step=%d v=%d x=%.10f y=%.10f status=FUEL valid=%d fuel=%p\n",
+						_gp_step, _fp_logged, (double)fp->x, (double)fp->y, (int)valid, (void*)fuel);
+					fflush(stderr);
+					_fp_logged++;
+				}
 				fp->Grow(&gvs, fuel);
 				_gp_fuel++;  /* DEBUG ONLY */
 			} else {
@@ -555,6 +571,14 @@ void FireFront<_type>::GrowPoints() {
 				else if (!fuel) _gp_nofuel_null++;
 				else _gp_nofuel_isfuel++;  /* fuel->IsNonFuel returned true */
 				if (_gp_nofuel == 0) { _gp_first_nf_x = fp->x; _gp_first_nf_y = fp->y; }
+				/* FUEL-POS: log first 5 nofuel vertices for large polygons */
+				if (_fp_large && _fp_logged < 5) {
+					const char *_reason = !valid ? "INVALID" : (!fuel ? "NULL" : "NONFUEL");
+					fprintf(stderr, "[FUEL-POS] step=%d v=%d x=%.10f y=%.10f status=NOFUEL reason=%s valid=%d fuel=%p\n",
+						_gp_step, _fp_logged, (double)fp->x, (double)fp->y, _reason, (int)valid, (void*)fuel);
+					fflush(stderr);
+					_fp_logged++;
+				}
 				_gp_nofuel++;
 				}
 		} else {
@@ -565,7 +589,7 @@ void FireFront<_type>::GrowPoints() {
 
 	/* DEBUG ONLY — REMOVE BEFORE SHIP
 	 * One line per internal step: fuel count, nofuel count, breakdown */
-	fprintf(stderr, "[GP#%d] fuel=%d nofuel=%d (invalid=%d null=%d isfuel=%d) stopped=%d first_nf=(%.4f,%.4f)\n",
+	fprintf(stderr, "[GP#%d] fuel=%d nofuel=%d (invalid=%d null=%d isfuel=%d) stopped=%d first_nf=(%.10f,%.10f)\n",
 		_gp_step++, _gp_fuel, _gp_nofuel,
 		_gp_nofuel_invalid, _gp_nofuel_null, _gp_nofuel_isfuel,
 		_gp_already_stopped, _gp_first_nf_x, _gp_first_nf_y);
