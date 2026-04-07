@@ -361,6 +361,31 @@ HRESULT Scenario<_type>::Step() {
 		sts->StatsFires();					// this calculates FBP values, then Gwyn's equations for full statics on every
 											// (active) fire vertex
 
+		/* ROS LIFECYCLE TRACE — after StatsFires, check what was written */
+		{
+			static int _rl_step = 0;
+			ScenarioFire<_type> *_sf = sts->m_fires.LH_Head();
+			while (_sf->LN_Succ()) {
+				FireFront<_type> *_ff = _sf->LH_Head();
+				while (_ff->LN_Succ()) {
+					int _nz = 0, _tot = 0;
+					FirePoint<_type> *_fp = _ff->LH_Head();
+					FirePoint<_type> *_first = _fp;
+					while (_fp->LN_Succ()) {
+						_tot++;
+						if (_fp->m_ellipse_ros.x != 0.0 || _fp->m_ellipse_ros.y != 0.0) _nz++;
+						_fp = _fp->LN_Succ();
+					}
+					fprintf(stderr, "[ROS-AFTER-STATS#%d] ff=%p npts=%d nonzero_ros=%d first_fp=%p first_ros=(%.6e,%.6e)\n",
+						_rl_step, (void*)_ff, _tot, _nz, (void*)_first,
+						(double)_first->m_ellipse_ros.x, (double)_first->m_ellipse_ros.y);
+					_ff = _ff->LN_Succ();
+				}
+				_sf = _sf->LN_Succ();
+			}
+			_rl_step++;
+		}
+
 		ScenarioFire<_type> *sf = sts->m_fires.LH_Head();		// the other routines above may have actually completely eliminated all fire fronts from a given
 		while (sf->LN_Succ()) {					// ignition - this loop simply does some housekeeping to clean things up (and make sure that the
 			if (sf->NumPolys()) {				// other housekeeping already performed was done correctly)
