@@ -207,9 +207,23 @@ bool FireFront<_type>::AdvanceFire(const _type scale) {
 	int _af_id = _af_step++;
 	{
 		FirePoint<_type> *_fp = LH_Head();
+		int _n_normal = 0, _n_stopped = 0, _n_zero_ros = 0, _n_null_prev = 0;
+		for (; _fp->LN_Succ(); _fp = _fp->LN_Succ()) {
+			if (_fp->m_status == FP_FLAG_NORMAL) _n_normal++; else _n_stopped++;
+			if (_fp->m_prevPoint) {
+				if (_fp->m_prevPoint->m_ellipse_ros.x == 0.0 && _fp->m_prevPoint->m_ellipse_ros.y == 0.0)
+					_n_zero_ros++;
+			} else _n_null_prev++;
+		}
+		fprintf(stderr, "[AF-DIAG#%d] npts=%d normal=%d stopped=%d zero_ros=%d null_prev=%d scale=%.6f\n",
+			_af_id, NumPoints(), _n_normal, _n_stopped, _n_zero_ros, _n_null_prev, (double)scale);
+		// first 3 vertex positions
+		_fp = LH_Head();
 		for (int _i = 0; _i < 3 && _fp->LN_Succ(); _i++, _fp = _fp->LN_Succ())
-			fprintf(stderr, "[VTX-BEFORE AF#%d] v%d x=%.10f y=%.10f\n",
-				_af_id, _i, (double)_fp->x, (double)_fp->y);
+			fprintf(stderr, "[VTX-BEFORE AF#%d] v%d x=%.10f y=%.10f status=%d ros=(%.6e,%.6e)\n",
+				_af_id, _i, (double)_fp->x, (double)_fp->y, (int)_fp->m_status,
+				_fp->m_prevPoint ? (double)_fp->m_prevPoint->m_ellipse_ros.x : -999.0,
+				_fp->m_prevPoint ? (double)_fp->m_prevPoint->m_ellipse_ros.y : -999.0);
 	}
 
 	bool advanced = false;
