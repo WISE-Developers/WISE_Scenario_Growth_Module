@@ -374,35 +374,6 @@ void FirePoint<_type>::Grow(const growVoxelParms<_type> *gvs, ICWFGM_Fuel *fuel)
 		accel_dtime, gvs->day_portion, (std::int16_t)(flags & 0xffff), &overrides, sts->m_scenario->m_scenario,
 		&rsi, &roseq, &ros, &frss, &froseq, &fros, &brss, &broseq, &bros, &lb, &wsv, &raz);
 
-	/* GROW TRACE — log first vertex per new simulation time, plus summary */
-	{
-		static std::int64_t _last_time = 0;
-		static int _grow_step = 0;
-		static int _grow_below_ros = 0, _grow_canburn_fail = 0, _grow_ok = 0;
-		static int _grow_count = 0;
-		std::int64_t _cur_time = sts->m_time.GetTotalSeconds();
-		if (_cur_time != _last_time) {
-			/* new simulation time — dump previous step summary */
-			if (_grow_count > 0)
-				fprintf(stderr, "[GROW-SUM#%d] n=%d ok=%d below_ros=%d canburn_fail=%d\n",
-					_grow_step - 1, _grow_count, _grow_ok, _grow_below_ros, _grow_canburn_fail);
-			_last_time = _cur_time;
-			_grow_below_ros = _grow_canburn_fail = _grow_ok = 0;
-			_grow_count = 0;
-			/* log detailed inputs for first vertex of this step */
-			bool _cb = sts->m_scenario->CanBurn(sts->m_time, gvs->centroid, cpt, wx.RH, windSpeed, ifwi.FWI, ifwi.ISI);
-			fprintf(stderr, "[GROW-V0#%d] roseq=%.6e minROS=%.6e ros=%.6f ws=%.2f wd=%.4f ffmc=%.1f bui=%.1f fwi=%.2f isi=%.2f rh=%.4f canburn=%d\n",
-				_grow_step, roseq, sts->m_scenario->m_scenario->m_minimumROS,
-				ros, windSpeed, wx.WindDirection, ifwi.FFMC, dfwi.dBUI, ifwi.FWI, ifwi.ISI, wx.RH, (int)_cb);
-			_grow_step++;
-		}
-		if (roseq > sts->m_scenario->m_scenario->m_minimumROS) {
-			bool _cb = sts->m_scenario->CanBurn(sts->m_time, gvs->centroid, cpt, wx.RH, windSpeed, ifwi.FWI, ifwi.ISI);
-			if (!_cb) _grow_canburn_fail++; else _grow_ok++;
-		} else _grow_below_ros++;
-		_grow_count++;
-	}
-
 	if (roseq > sts->m_scenario->m_scenario->m_minimumROS) {
 		if (roseq < 1e-5)
 			m_fbp_ros_ratio = 1.0;
@@ -559,22 +530,6 @@ void FireFront<_type>::GrowPoints() {
 	gvs.target_idx = s->m_scenario->m_windTargetIndex;
 	gvs.target_sub_idx = s->m_scenario->m_windTargetSubIndex;
 
-	/* DEBUG ONLY — REMOVE BEFORE SHIP */
-	static int _gp_step = 0;
-	int _gp_fuel = 0, _gp_nofuel = 0, _gp_nofuel_invalid = 0, _gp_nofuel_null = 0;
-	int _gp_nofuel_isfuel = 0, _gp_already_stopped = 0;
-	double _gp_first_nf_x = 0, _gp_first_nf_y = 0;
-	/* END DEBUG VARS */
-
-	/* FUEL-POS: for large polygons, log vertex positions and fuel status */
-	std::uint32_t _fp_npts = NumPoints();
-	bool _fp_large = (_fp_npts > 100);
-	int _fp_logged = 0;
-	if (_fp_large) {
-		fprintf(stderr, "[FUEL-POS-HDR] step=%d npts=%u\n", _gp_step, _fp_npts);
-		fflush(stderr);
-	}
-
 	FirePoint<_type> *fp = LH_Head();
 	while (fp->LN_Succ()) {
 		if (fp->m_status == FP_FLAG_NORMAL) {
@@ -582,47 +537,15 @@ void FireFront<_type>::GrowPoints() {
 			ICWFGM_Fuel *fuel = gvs.self_fire_timestep->m_scenario->GetFuel(gvs.self_fire_timestep->m_time, *fp, valid);
 			bool result;
 			if ((valid) && (fuel) && (SUCCEEDED(fuel->IsNonFuel(&result))) && (!result)) {
-				/* FUEL-POS: log first 5 valid-fuel vertices for large polygons */
-				if (_fp_large && _fp_logged < 5) {
-					fprintf(stderr, "[FUEL-POS] step=%d v=%d x=%.10f y=%.10f status=FUEL valid=%d fuel=%p\n",
-						_gp_step, _fp_logged, (double)fp->x, (double)fp->y, (int)valid, (void*)fuel);
-					fflush(stderr);
-					_fp_logged++;
-				}
 				fp->Grow(&gvs, fuel);
-				_gp_fuel++;  /* DEBUG ONLY */
 			} else {
 				fp->m_ellipse_ros.x = fp->m_ellipse_ros.y = 0.0;
 				fp->m_fbp_ros_ratio = 1.0;
 				fp->m_status = FP_FLAG_NOFUEL;
-				/* DEBUG ONLY — classify why */
-				if (!valid) _gp_nofuel_invalid++;
-				else if (!fuel) _gp_nofuel_null++;
-				else _gp_nofuel_isfuel++;  /* fuel->IsNonFuel returned true */
-				if (_gp_nofuel == 0) { _gp_first_nf_x = fp->x; _gp_first_nf_y = fp->y; }
-				/* FUEL-POS: log first 5 nofuel vertices for large polygons */
-				if (_fp_large && _fp_logged < 5) {
-					const char *_reason = !valid ? "INVALID" : (!fuel ? "NULL" : "NONFUEL");
-					fprintf(stderr, "[FUEL-POS] step=%d v=%d x=%.10f y=%.10f status=NOFUEL reason=%s valid=%d fuel=%p\n",
-						_gp_step, _fp_logged, (double)fp->x, (double)fp->y, _reason, (int)valid, (void*)fuel);
-					fflush(stderr);
-					_fp_logged++;
-				}
-				_gp_nofuel++;
-				}
-		} else {
-			_gp_already_stopped++;  /* DEBUG ONLY */
+			}
 		}
 		fp = fp->LN_Succ();
 	}
-
-	/* DEBUG ONLY — REMOVE BEFORE SHIP
-	 * One line per internal step: fuel count, nofuel count, breakdown */
-	fprintf(stderr, "[GP#%d] fuel=%d nofuel=%d (invalid=%d null=%d isfuel=%d) stopped=%d first_nf=(%.10f,%.10f)\n",
-		_gp_step++, _gp_fuel, _gp_nofuel,
-		_gp_nofuel_invalid, _gp_nofuel_null, _gp_nofuel_isfuel,
-		_gp_already_stopped, _gp_first_nf_x, _gp_first_nf_y);
-	/* END DEBUG ONLY */
 }
 
 

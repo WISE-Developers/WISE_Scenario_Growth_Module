@@ -179,23 +179,6 @@ bool FireFront<_type>::advancePoint(const _type scale, const FirePoint<_type> *p
 			XYPointType new_loc = *curr;
 			new_loc += delta_new;
 
-			/* DISPLACEMENT TRACE — log first 3 moving vertices per AdvanceFire call */
-			{
-				static int _adv_moved = 0;
-				static int _adv_step = -1;
-				int _cur_step = _adv_moved / 900; /* approx step boundary */
-				if (_adv_moved < 15) { /* first 5 steps × 3 vertices */
-					fprintf(stderr, "[DISP#%d] before=(%.10f,%.10f) ros=(%.10e,%.10e) scale=%.6f delta=(%.10e,%.10e) after=(%.10f,%.10f)\n",
-						_adv_moved,
-						(double)curr->x, (double)curr->y,
-						(double)curr->m_prevPoint->m_ellipse_ros.x, (double)curr->m_prevPoint->m_ellipse_ros.y,
-						(double)scale,
-						(double)delta_new.x, (double)delta_new.y,
-						(double)new_loc.x, (double)new_loc.y);
-				}
-				_adv_moved++;
-			}
-
 			SetPoint(curr, new_loc);			// *********** m_ellipse_ros seems to be also used by the grid tracking code,
 			retval = true;					// should remove these dependencies and turn this off
 		} else
@@ -218,30 +201,6 @@ struct advancePointStr {
 template<class _type>
 bool FireFront<_type>::AdvanceFire(const _type scale) {
 	EnableCaching(false);
-
-	/* VERTEX POSITION TRACE — captures before/after to detect movement */
-	static int _af_step = 0;
-	int _af_id = _af_step++;
-	{
-		FirePoint<_type> *_fp = LH_Head();
-		int _n_normal = 0, _n_stopped = 0, _n_zero_ros = 0, _n_null_prev = 0;
-		for (; _fp->LN_Succ(); _fp = _fp->LN_Succ()) {
-			if (_fp->m_status == FP_FLAG_NORMAL) _n_normal++; else _n_stopped++;
-			if (_fp->m_prevPoint) {
-				if (_fp->m_prevPoint->m_ellipse_ros.x == 0.0 && _fp->m_prevPoint->m_ellipse_ros.y == 0.0)
-					_n_zero_ros++;
-			} else _n_null_prev++;
-		}
-		fprintf(stderr, "[AF-DIAG#%d] npts=%d normal=%d stopped=%d zero_ros=%d null_prev=%d scale=%.6f\n",
-			_af_id, NumPoints(), _n_normal, _n_stopped, _n_zero_ros, _n_null_prev, (double)scale);
-		// first 3 vertex positions
-		_fp = LH_Head();
-		for (int _i = 0; _i < 3 && _fp->LN_Succ(); _i++, _fp = _fp->LN_Succ())
-			fprintf(stderr, "[VTX-BEFORE AF#%d] v%d x=%.10f y=%.10f status=%d ros=(%.6e,%.6e)\n",
-				_af_id, _i, (double)_fp->x, (double)_fp->y, (int)_fp->m_status,
-				_fp->m_prevPoint ? (double)_fp->m_prevPoint->m_ellipse_ros.x : -999.0,
-				_fp->m_prevPoint ? (double)_fp->m_prevPoint->m_ellipse_ros.y : -999.0);
-	}
 
 	bool advanced = false;
 	if ((NumPoints() > QUEUE_UP) && (Fire()->TimeStep()->m_scenario->m_pool)) {
@@ -290,15 +249,6 @@ bool FireFront<_type>::AdvanceFire(const _type scale) {
 			curr = next;
 			next = next->LN_Succ();
 		}
-	}
-	/* VERTEX POSITION TRACE — after advance */
-	{
-		FirePoint<_type> *_fp = LH_Head();
-		for (int _i = 0; _i < 3 && _fp->LN_Succ(); _i++, _fp = _fp->LN_Succ())
-			fprintf(stderr, "[VTX-AFTER  AF#%d] v%d x=%.10f y=%.10f\n",
-				_af_id, _i, (double)_fp->x, (double)_fp->y);
-		fprintf(stderr, "[AF#%d] advanced=%d npts=%d scale=%.6f\n",
-			_af_id, (int)advanced, NumPoints(), (double)scale);
 	}
 	return advanced;
 }

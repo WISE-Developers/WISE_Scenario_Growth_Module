@@ -332,41 +332,17 @@ HRESULT Scenario<_type>::Step() {
 														// the previous state's statics for each fire point - this has to do the smoothing
 														// that Cordy wants
 
-		/* PIPELINE TRACE — measure area+verts after each intermediate step (advancing only) */
-		static int _pl_step = 0;
-		auto _pl_measure = [&](const char* label) {
-			int _total_pts = 0, _total_polys = 0;
-			double _total_area = 0;
-			ScenarioFire<_type> *_sf2 = sts->m_fires.LH_Head();
-			while (_sf2->LN_Succ()) {
-				FireFront<_type> *_ff2 = _sf2->LH_Head();
-				while (_ff2->LN_Succ()) {
-					_total_pts += _ff2->NumPoints();
-					_total_polys++;
-					_total_area += fabs((double)_ff2->Area());
-					_ff2 = _ff2->LN_Succ();
-				}
-				_sf2 = _sf2->LN_Succ();
-			}
-			fprintf(stderr, "[PL#%d-%s] polys=%d pts=%d area=%.2f\n",
-				_pl_step, label, _total_polys, _total_pts, _total_area);
-		};
-		if (advanced) _pl_measure("ADVANCE");
-
 		if ((advanced) && ((m_scenario->m_perimeterSpacing != 0.0)))
 			sts->SimplifyFires();
 		else
 			sts->SimplifyFiresNull();
-		if (advanced) _pl_measure("SIMPLIFY");
 
 		if (advanced)
 			sts->TrackFires();				// this pulls back any points due to intersections with fire breaks based on paths
 		else
 			sts->TrackFiresNull();
-		if (advanced) _pl_measure("TRACK");
 
 		sts->UnWindFires(advanced);				// this deals with any loops or knots, and may add or remove from the set of fires
-		if (advanced) _pl_measure("UNWIND");
 
 		advanced |= sts->AddIgnitions();			// this adds any new ignitions to the fold, as necessary - it also make sure that
 									// the new ignitions can actually burn and works from there - it also (necessarily)
@@ -378,40 +354,12 @@ HRESULT Scenario<_type>::Step() {
 									// area from the previous step
 		else
 			sts->UnOverlapFiresNull();
-		if (advanced) _pl_measure("UNOVERLAP");
 
 		if (advanced)
 			sts->AddFirePoints();				// this introduces new fire points as we need them, based on m_perimeterResolution
-		if (advanced) _pl_measure("ADDPTS");
 
-		_pl_step++;
 		sts->StatsFires();					// this calculates FBP values, then Gwyn's equations for full statics on every
 											// (active) fire vertex
-
-		/* ROS LIFECYCLE TRACE — after StatsFires, check what was written */
-		{
-			static int _rl_step = 0;
-			ScenarioFire<_type> *_sf = sts->m_fires.LH_Head();
-			while (_sf->LN_Succ()) {
-				FireFront<_type> *_ff = _sf->LH_Head();
-				while (_ff->LN_Succ()) {
-					int _nz = 0, _tot = 0;
-					FirePoint<_type> *_fp = _ff->LH_Head();
-					FirePoint<_type> *_first = _fp;
-					while (_fp->LN_Succ()) {
-						_tot++;
-						if (_fp->m_ellipse_ros.x != 0.0 || _fp->m_ellipse_ros.y != 0.0) _nz++;
-						_fp = _fp->LN_Succ();
-					}
-					fprintf(stderr, "[ROS-AFTER-STATS#%d] ff=%p npts=%d nonzero_ros=%d first_fp=%p first_ros=(%.6e,%.6e)\n",
-						_rl_step, (void*)_ff, _tot, _nz, (void*)_first,
-						(double)_first->m_ellipse_ros.x, (double)_first->m_ellipse_ros.y);
-					_ff = _ff->LN_Succ();
-				}
-				_sf = _sf->LN_Succ();
-			}
-			_rl_step++;
-		}
 
 		ScenarioFire<_type> *sf = sts->m_fires.LH_Head();		// the other routines above may have actually completely eliminated all fire fronts from a given
 		while (sf->LN_Succ()) {					// ignition - this loop simply does some housekeeping to clean things up (and make sure that the
