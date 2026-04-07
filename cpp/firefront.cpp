@@ -179,7 +179,24 @@ bool FireFront<_type>::advancePoint(const _type scale, const FirePoint<_type> *p
 			XYPointType new_loc = *curr;
 			new_loc += delta_new;
 
-			SetPoint(curr, new_loc);			// *********** m_ellipse_ros seems to be also used by the grid tracking code, 
+			/* DISPLACEMENT TRACE — log first 3 moving vertices per AdvanceFire call */
+			{
+				static int _adv_moved = 0;
+				static int _adv_step = -1;
+				int _cur_step = _adv_moved / 900; /* approx step boundary */
+				if (_adv_moved < 15) { /* first 5 steps × 3 vertices */
+					fprintf(stderr, "[DISP#%d] before=(%.10f,%.10f) ros=(%.10e,%.10e) scale=%.6f delta=(%.10e,%.10e) after=(%.10f,%.10f)\n",
+						_adv_moved,
+						(double)curr->x, (double)curr->y,
+						(double)curr->m_prevPoint->m_ellipse_ros.x, (double)curr->m_prevPoint->m_ellipse_ros.y,
+						(double)scale,
+						(double)delta_new.x, (double)delta_new.y,
+						(double)new_loc.x, (double)new_loc.y);
+				}
+				_adv_moved++;
+			}
+
+			SetPoint(curr, new_loc);			// *********** m_ellipse_ros seems to be also used by the grid tracking code,
 			retval = true;					// should remove these dependencies and turn this off
 		} else
 			retval = false;
