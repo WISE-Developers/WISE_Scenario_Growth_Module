@@ -972,8 +972,28 @@ template<class _type>
 bool ScenarioCache<_type>::CanBurn(const WTime &datetime, const XYPointType& centroid, const XYPointType &pt, const double rh, const double WindSpeed, const double fwi, const double isi) {
 	WTimeSpan dayportion = datetime.GetTimeOfDay(WTIME_FORMAT_AS_LOCAL | WTIME_FORMAT_WITHDST);
 	WTimeSpan start, end;
-	if (!CanBurnTime(datetime, centroid, start, end))
+
+	/* CANBURN TRACE — which check fails? */
+	static int _cb_call = 0;
+	static int _cb_time_fail = 0, _cb_rh_fail = 0, _cb_ws_fail = 0, _cb_fwi_fail = 0, _cb_isi_fail = 0, _cb_pass = 0;
+	static std::int64_t _cb_last_time = 0;
+	std::int64_t _cb_cur_time = datetime.GetTotalSeconds();
+	bool _cb_new_step = (_cb_cur_time != _cb_last_time);
+	if (_cb_new_step && _cb_call > 0) {
+		fprintf(stderr, "[CB-SUM] n=%d time_fail=%d rh=%d ws=%d fwi=%d isi=%d pass=%d\n",
+			_cb_time_fail + _cb_rh_fail + _cb_ws_fail + _cb_fwi_fail + _cb_isi_fail + _cb_pass,
+			_cb_time_fail, _cb_rh_fail, _cb_ws_fail, _cb_fwi_fail, _cb_isi_fail, _cb_pass);
+		_cb_time_fail = _cb_rh_fail = _cb_ws_fail = _cb_fwi_fail = _cb_isi_fail = _cb_pass = 0;
+		_cb_last_time = _cb_cur_time;
+	}
+	if (_cb_call == 0) _cb_last_time = _cb_cur_time;
+
+	if (!CanBurnTime(datetime, centroid, start, end)) {
+		if (_cb_call < 5)
+			fprintf(stderr, "[CB#%d] NO_BURN_TIME dayportion=%ld\n", _cb_call, (long)dayportion.GetTotalSeconds());
+		_cb_call++;
 		return true;
+	}
 
 	if (end > start) {
 		if (dayportion < start) {
@@ -982,24 +1002,42 @@ bool ScenarioCache<_type>::CanBurn(const WTime &datetime, const XYPointType& cen
 				if (p_end >= p_start) {
 					if (p_end >= WTimeSpan(1, 0, 0, 0)) {
 						p_end -= WTimeSpan(1, 0, 0, 0);
-						if (dayportion > p_end)
+						if (dayportion > p_end) {
+							_cb_call++;
 							return true;
+						}
 					}
 				}
 			}
+			if (_cb_call < 5)
+				fprintf(stderr, "[CB#%d] TIME_FAIL: dp=%ld < start=%ld\n", _cb_call,
+					(long)dayportion.GetTotalSeconds(), (long)start.GetTotalSeconds());
+			_cb_time_fail++; _cb_call++;
 			return false;
 		}
 
-		if ((dayportion.GetMinutes() == 59) && (dayportion.GetSeconds() == 59)) {	// important check for how we're handling hourly burning periods - another way to say this is we don't want
-			if (dayportion > end)													// a timestep of 1 second, either - and for a full day we have to specify 23:59:59 and not 24:00:00
+		if ((dayportion.GetMinutes() == 59) && (dayportion.GetSeconds() == 59)) {
+			if (dayportion > end) {
+				if (_cb_call < 5)
+					fprintf(stderr, "[CB#%d] TIME_FAIL: dp=%ld > end=%ld (59s)\n", _cb_call,
+						(long)dayportion.GetTotalSeconds(), (long)end.GetTotalSeconds());
+				_cb_time_fail++; _cb_call++;
 				return false;
+			}
 		} else {
-			if (dayportion >= end)													// check we need for handling burning periods to a per-sec like based on sun rise and set
+			if (dayportion >= end) {
+				if (_cb_call < 5)
+					fprintf(stderr, "[CB#%d] TIME_FAIL: dp=%ld >= end=%ld\n", _cb_call,
+						(long)dayportion.GetTotalSeconds(), (long)end.GetTotalSeconds());
+				_cb_time_fail++; _cb_call++;
 				return false;
+			}
 		}
 	}
-	else if (start != WTimeSpan(0L))
+	else if (start != WTimeSpan(0L)) {
+		_cb_time_fail++; _cb_call++;
 		return false;
+	}
 
 	XY_Point _pt(pt);
 	fromInternal(_pt);
@@ -1011,35 +1049,52 @@ bool ScenarioCache<_type>::CanBurn(const WTime &datetime, const XYPointType& cen
 		if (variantToDouble(value, &min_rh)) {
     		weak_assert(min_rh >= 0.0);
     		weak_assert(min_rh <= 1.0);
-    		if (rh > min_rh)
+    		if (rh > min_rh) {
+				if (_cb_call < 5)
+					fprintf(stderr, "[CB#%d] RH_FAIL: rh=%.4f > min_rh=%.4f\n", _cb_call, rh, min_rh);
+				_cb_rh_fail++; _cb_call++;
     			return false;
+			}
 		}
 	}
 
 	if (SUCCEEDED(hr = m_scenario->m_gridEngine->GetAttributeData(m_scenario->m_layerThread, _pt, datetime, WTimeSpan(0), CWFGM_GRID_ATTRIBUTE_BURNINGCONDITION_MAX_WS, 0, &value, &value_valid, nullptr)) && (value_valid != grid::AttributeValue::NOT_SET)) {
 		double max_ws;
 		if (variantToDouble(value, &max_ws)) {
-			if (WindSpeed < max_ws)
+			if (WindSpeed < max_ws) {
+				if (_cb_call < 5)
+					fprintf(stderr, "[CB#%d] WS_FAIL: ws=%.2f < max_ws=%.2f\n", _cb_call, WindSpeed, max_ws);
+				_cb_ws_fail++; _cb_call++;
 				return false;
+			}
 		}
 	}
 
 	if (SUCCEEDED(hr = m_scenario->m_gridEngine->GetAttributeData(m_scenario->m_layerThread, _pt, datetime, WTimeSpan(0), CWFGM_GRID_ATTRIBUTE_BURNINGCONDITION_MIN_FWI, 0, &value, &value_valid, nullptr)) && (value_valid != grid::AttributeValue::NOT_SET)) {
 		double min_fwi;
 		if (variantToDouble(value, &min_fwi)) {
-			if (fwi < min_fwi)
+			if (fwi < min_fwi) {
+				if (_cb_call < 5)
+					fprintf(stderr, "[CB#%d] FWI_FAIL: fwi=%.2f < min_fwi=%.2f\n", _cb_call, fwi, min_fwi);
+				_cb_fwi_fail++; _cb_call++;
 				return false;
+			}
 		}
 	}
 
 	if (SUCCEEDED(hr = m_scenario->m_gridEngine->GetAttributeData(m_scenario->m_layerThread, _pt, datetime, WTimeSpan(0), CWFGM_GRID_ATTRIBUTE_BURNINGCONDITION_MIN_ISI, 0, &value, &value_valid, nullptr)) && (value_valid != grid::AttributeValue::NOT_SET)) {
 		double min_isi;
 		if (variantToDouble(value, &min_isi)) {
-			if (isi < min_isi)
+			if (isi < min_isi) {
+				if (_cb_call < 5)
+					fprintf(stderr, "[CB#%d] ISI_FAIL: isi=%.2f < min_isi=%.2f\n", _cb_call, isi, min_isi);
+				_cb_isi_fail++; _cb_call++;
 				return false;
+			}
 		}
 	}
 
+	_cb_pass++; _cb_call++;
 	return true;
 }
 
