@@ -202,20 +202,15 @@ template<class _type>
 bool FireFront<_type>::AdvanceFire(const _type scale) {
 	EnableCaching(false);
 
-	/* DEBUG ONLY — REMOVE BEFORE SHIP */
+	/* VERTEX POSITION TRACE — captures before/after to detect movement */
+	static int _af_step = 0;
+	int _af_id = _af_step++;
 	{
-		static int _af_step = 0;
-		int _af_normal = 0, _af_stopped = 0;
 		FirePoint<_type> *_fp = LH_Head();
-		while (_fp->LN_Succ()) {
-			if (_fp->m_status == FP_FLAG_NORMAL) _af_normal++;
-			else _af_stopped++;
-			_fp = _fp->LN_Succ();
-		}
-		fprintf(stderr, "[AF#%d] npts=%d normal=%d stopped=%d scale=%.6f\n",
-			_af_step++, NumPoints(), _af_normal, _af_stopped, (double)scale);
+		for (int _i = 0; _i < 3 && _fp->LN_Succ(); _i++, _fp = _fp->LN_Succ())
+			fprintf(stderr, "[VTX-BEFORE AF#%d] v%d x=%.10f y=%.10f\n",
+				_af_id, _i, (double)_fp->x, (double)_fp->y);
 	}
-	/* END DEBUG ONLY */
 
 	bool advanced = false;
 	if ((NumPoints() > QUEUE_UP) && (Fire()->TimeStep()->m_scenario->m_pool)) {
@@ -264,6 +259,15 @@ bool FireFront<_type>::AdvanceFire(const _type scale) {
 			curr = next;
 			next = next->LN_Succ();
 		}
+	}
+	/* VERTEX POSITION TRACE — after advance */
+	{
+		FirePoint<_type> *_fp = LH_Head();
+		for (int _i = 0; _i < 3 && _fp->LN_Succ(); _i++, _fp = _fp->LN_Succ())
+			fprintf(stderr, "[VTX-AFTER  AF#%d] v%d x=%.10f y=%.10f\n",
+				_af_id, _i, (double)_fp->x, (double)_fp->y);
+		fprintf(stderr, "[AF#%d] advanced=%d npts=%d scale=%.6f\n",
+			_af_id, (int)advanced, NumPoints(), (double)scale);
 	}
 	return advanced;
 }
