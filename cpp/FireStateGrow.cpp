@@ -374,10 +374,39 @@ void FirePoint<_type>::Grow(const growVoxelParms<_type> *gvs, ICWFGM_Fuel *fuel)
 		accel_dtime, gvs->day_portion, (std::int16_t)(flags & 0xffff), &overrides, sts->m_scenario->m_scenario,
 		&rsi, &roseq, &ros, &frss, &froseq, &fros, &brss, &broseq, &bros, &lb, &wsv, &raz);
 
+	/* GROW TRACE — log first vertex per new simulation time, plus summary */
+	{
+		static std::int64_t _last_time = 0;
+		static int _grow_step = 0;
+		static int _grow_below_ros = 0, _grow_canburn_fail = 0, _grow_ok = 0;
+		static int _grow_count = 0;
+		std::int64_t _cur_time = sts->m_time.GetTotalSeconds();
+		if (_cur_time != _last_time) {
+			/* new simulation time — dump previous step summary */
+			if (_grow_count > 0)
+				fprintf(stderr, "[GROW-SUM#%d] n=%d ok=%d below_ros=%d canburn_fail=%d\n",
+					_grow_step - 1, _grow_count, _grow_ok, _grow_below_ros, _grow_canburn_fail);
+			_last_time = _cur_time;
+			_grow_below_ros = _grow_canburn_fail = _grow_ok = 0;
+			_grow_count = 0;
+			/* log detailed inputs for first vertex of this step */
+			bool _cb = sts->m_scenario->CanBurn(sts->m_time, gvs->centroid, cpt, wx.RH, windSpeed, ifwi.FWI, ifwi.ISI);
+			fprintf(stderr, "[GROW-V0#%d] roseq=%.6e minROS=%.6e ros=%.6f ws=%.2f wd=%.4f ffmc=%.1f bui=%.1f fwi=%.2f isi=%.2f rh=%.4f canburn=%d\n",
+				_grow_step, roseq, sts->m_scenario->m_scenario->m_minimumROS,
+				ros, windSpeed, wx.WindDirection, ifwi.FFMC, dfwi.dBUI, ifwi.FWI, ifwi.ISI, wx.RH, (int)_cb);
+			_grow_step++;
+		}
+		if (roseq > sts->m_scenario->m_scenario->m_minimumROS) {
+			bool _cb = sts->m_scenario->CanBurn(sts->m_time, gvs->centroid, cpt, wx.RH, windSpeed, ifwi.FWI, ifwi.ISI);
+			if (!_cb) _grow_canburn_fail++; else _grow_ok++;
+		} else _grow_below_ros++;
+		_grow_count++;
+	}
+
 	if (roseq > sts->m_scenario->m_scenario->m_minimumROS) {
 		if (roseq < 1e-5)
 			m_fbp_ros_ratio = 1.0;
-		else	
+		else
 			m_fbp_ros_ratio = ros / roseq;
 
 		m_fbp_rsi = rsi;
@@ -386,7 +415,7 @@ void FirePoint<_type>::Grow(const growVoxelParms<_type> *gvs, ICWFGM_Fuel *fuel)
 		m_fbp_bros = bros;
 		m_fbp_fros = fros;
 		m_fbp_raz = CARTESIAN_TO_COMPASS_RADIAN(raz);
-	
+
 		if (flags & (1ull << CWFGM_SCENARIO_OPTION_USE_2DGROWTH)) {
 			grow2D(p_pt, s_pt);
 		} else { /* want 3-d growth */
