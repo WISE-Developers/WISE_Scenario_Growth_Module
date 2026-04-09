@@ -392,8 +392,8 @@ HRESULT Scenario<_type>::Step() {
 			}
 		};
 
-		/* Set thread-local scenario index for poly.cpp Unwind dumps */
-		{ extern thread_local int g_wise_scenario_idx;
+		/* Set scenario index for poly.cpp Unwind dumps (defined in poly.cpp) */
+		{ extern int g_wise_scenario_idx;
 		  g_wise_scenario_idx = (_dsc_i >= 0) ? _dsc_i : -1; }
 
 		_dump_npts("PRE-ADVANCE");
