@@ -277,6 +277,13 @@ void FirePoint<_type>::Grow(const growVoxelParms<_type> *gvs, ICWFGM_Fuel *fuel)
 			    | (1ull << CWFGM_SCENARIO_OPTION_WEATHER_INTERPOLATE_CALCFWI) | (1ull << CWFGM_SCENARIO_OPTION_WEATHER_INTERPOLATE_HISTORY)),
 		    &wx, &ifwi, &dfwi, &wx_valid, nullptr);
 
+	/* ── Weather data trace: compare with control's FFMC/dBUI/FWI ── */
+	{ static int _wx_log = 0; if (_wx_log < 5) { _wx_log++;
+	  fprintf(stderr, "[WX#%d] t=%lld FFMC=%.4f dBUI=%.4f FWI=%.4f ISI=%.4f RH=%.4f WS=%.4f\n",
+	    _wx_log, (long long)sts->m_time.GetTotalSeconds(),
+	    ifwi.FFMC, dfwi.dBUI, ifwi.FWI, ifwi.ISI, wx.RH, wx.WindSpeed);
+	  fflush(stderr); } }
+
     #ifdef DEBUG_TEST_SLOPE
 	wx.WindDirection = 0.0;
 	wx.WindSpeed = 0.0;
