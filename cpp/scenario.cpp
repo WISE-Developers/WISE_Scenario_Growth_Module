@@ -392,10 +392,15 @@ HRESULT Scenario<_type>::Step() {
 			}
 		};
 
+		/* Set thread-local scenario index for poly.cpp Unwind dumps */
+		{ extern thread_local int g_wise_scenario_idx;
+		  g_wise_scenario_idx = (_dsc_i >= 0) ? _dsc_i : -1; }
+
 		_dump_npts("PRE-ADVANCE");
 		bool advanced = sts->AdvanceFires();
 		_dump_npts("POST-ADVANCE");
-		if (_dsc_i>=0) _dump_coords("POST-ADVANCE", "/tmp/post_advance_verts.txt", _dsc_adv[_dsc_i]);
+		if (_dsc_i>=0) { char _pa[64]; snprintf(_pa,64,"/tmp/post_advance_sc%d.txt",_dsc_i);
+		  _dump_coords("POST-ADVANCE", _pa, _dsc_adv[_dsc_i]); }
 
 		if ((advanced) && ((m_scenario->m_perimeterSpacing != 0.0)))
 			sts->SimplifyFires();
@@ -408,7 +413,8 @@ HRESULT Scenario<_type>::Step() {
 		else
 			sts->TrackFiresNull();
 		_dump_npts("POST-TRACK");
-		if (_dsc_i>=0) _dump_coords("POST-TRACK", "/tmp/post_track_verts.txt", _dsc_trk[_dsc_i]);
+		if (_dsc_i>=0) { char _pt[64]; snprintf(_pt,64,"/tmp/post_track_sc%d.txt",_dsc_i);
+		  _dump_coords("POST-TRACK", _pt, _dsc_trk[_dsc_i]); }
 
 		sts->UnWindFires(advanced);
 		_dump_npts("POST-UNWIND");
