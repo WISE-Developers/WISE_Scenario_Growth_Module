@@ -421,18 +421,36 @@ void FirePoint<_type>::Grow(const growVoxelParms<_type> *gvs, ICWFGM_Fuel *fuel)
 		m_fbp_ros_ratio = 1.0;
 	}
 
-	/* ── Growth gate trace: log roseq, CanBurn, and final ROS for first N calls ── */
+	/* ── Growth gate trace: log transitions and non-zero spread ── */
 	{
-		static int _grow_log = 0;
-		if (_grow_log < 30) {
-			_grow_log++;
-			fprintf(stderr, "[GROW#%d] t=%lld roseq=%.8g canburn=%d eros=(%.8g,%.8g) minROS=%.8g\n",
-				_grow_log,
-				(long long)sts->m_time.GetTotalSeconds(),
-				roseq, _cb ? 1 : 0,
-				(double)m_ellipse_ros.x, (double)m_ellipse_ros.y,
-				sts->m_scenario->m_scenario->m_minimumROS);
-			fflush(stderr);
+		static int _grow_total = 0;
+		static int _grow_burn = 0;
+		static int _grow_nobr = 0;
+		static long long _last_t = 0;
+		_grow_total++;
+		long long t = (long long)sts->m_time.GetTotalSeconds();
+		/* Log timestep transitions */
+		if (t != _last_t) {
+			if (_last_t != 0)
+				fprintf(stderr, "[GROW-STEP] t=%lld total=%d canburn_yes=%d canburn_no=%d\n",
+					_last_t, _grow_total-1, _grow_burn, _grow_nobr);
+			_last_t = t;
+			_grow_burn = 0;
+			_grow_nobr = 0;
+		}
+		if (_cb) {
+			_grow_burn++;
+			/* Log first 10 per-vertex growth-allowed events */
+			static int _grow_yes_log = 0;
+			if (_grow_yes_log < 10) {
+				_grow_yes_log++;
+				fprintf(stderr, "[GROW-YES#%d] t=%lld roseq=%.8g eros=(%.8g,%.8g)\n",
+					_grow_yes_log, t, roseq,
+					(double)m_ellipse_ros.x, (double)m_ellipse_ros.y);
+				fflush(stderr);
+			}
+		} else {
+			_grow_nobr++;
 		}
 	}
 	// collect the values of interest for us to store for this point
