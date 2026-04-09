@@ -973,8 +973,11 @@ bool ScenarioCache<_type>::CanBurn(const WTime &datetime, const XYPointType& cen
 	WTimeSpan dayportion = datetime.GetTimeOfDay(WTIME_FORMAT_AS_LOCAL | WTIME_FORMAT_WITHDST);
 	WTimeSpan start, end;
 
+	int _cb_exit = 0; /* track which gate fires */
+
 	if (!CanBurnTime(datetime, centroid, start, end)) {
-		return true;
+		_cb_exit = 1; /* no burn time defined → allow */
+		goto _cb_log;
 	}
 
 	if (end > start) {
@@ -985,72 +988,112 @@ bool ScenarioCache<_type>::CanBurn(const WTime &datetime, const XYPointType& cen
 					if (p_end >= WTimeSpan(1, 0, 0, 0)) {
 						p_end -= WTimeSpan(1, 0, 0, 0);
 						if (dayportion > p_end) {
-							return true;
+							_cb_exit = 2;
+							goto _cb_log;
 						}
 					}
 				}
 			}
-			return false;
+			_cb_exit = -2; /* before start, no prev-day wrap */
+			goto _cb_log;
 		}
 
 		if ((dayportion.GetMinutes() == 59) && (dayportion.GetSeconds() == 59)) {
 			if (dayportion > end) {
-				return false;
+				_cb_exit = -3;
+				goto _cb_log;
 			}
 		} else {
 			if (dayportion >= end) {
-				return false;
+				_cb_exit = -3; /* past end of burn window */
+				goto _cb_log;
 			}
 		}
 	}
 	else if (start != WTimeSpan(0L)) {
-		return false;
+		_cb_exit = -4; /* start!=0 but end<=start */
+		goto _cb_log;
 	}
 
-	XY_Point _pt(pt);
-	fromInternal(_pt);
-	NumericVariant value;
-	grid::AttributeValue value_valid;
-	HRESULT hr;
-	if (SUCCEEDED(hr = m_scenario->m_gridEngine->GetAttributeData(m_scenario->m_layerThread, _pt, datetime, WTimeSpan(0), CWFGM_GRID_ATTRIBUTE_BURNINGCONDITION_MIN_RH, 0, &value, &value_valid, nullptr)) && (value_valid != grid::AttributeValue::NOT_SET)) {
-		double min_rh;
-		if (variantToDouble(value, &min_rh)) {
-    		weak_assert(min_rh >= 0.0);
-    		weak_assert(min_rh <= 1.0);
-    		if (rh > min_rh) {
-    			return false;
+	{
+		XY_Point _pt(pt);
+		fromInternal(_pt);
+		NumericVariant value;
+		grid::AttributeValue value_valid;
+		HRESULT hr;
+		if (SUCCEEDED(hr = m_scenario->m_gridEngine->GetAttributeData(m_scenario->m_layerThread, _pt, datetime, WTimeSpan(0), CWFGM_GRID_ATTRIBUTE_BURNINGCONDITION_MIN_RH, 0, &value, &value_valid, nullptr)) && (value_valid != grid::AttributeValue::NOT_SET)) {
+			double min_rh;
+			if (variantToDouble(value, &min_rh)) {
+				weak_assert(min_rh >= 0.0);
+				weak_assert(min_rh <= 1.0);
+				if (rh > min_rh) {
+					_cb_exit = -5; /* RH too high */
+					goto _cb_log;
+				}
+			}
+		}
+
+		if (SUCCEEDED(hr = m_scenario->m_gridEngine->GetAttributeData(m_scenario->m_layerThread, _pt, datetime, WTimeSpan(0), CWFGM_GRID_ATTRIBUTE_BURNINGCONDITION_MAX_WS, 0, &value, &value_valid, nullptr)) && (value_valid != grid::AttributeValue::NOT_SET)) {
+			double max_ws;
+			if (variantToDouble(value, &max_ws)) {
+				if (WindSpeed < max_ws) {
+					_cb_exit = -6; /* wind too low */
+					goto _cb_log;
+				}
+			}
+		}
+
+		if (SUCCEEDED(hr = m_scenario->m_gridEngine->GetAttributeData(m_scenario->m_layerThread, _pt, datetime, WTimeSpan(0), CWFGM_GRID_ATTRIBUTE_BURNINGCONDITION_MIN_FWI, 0, &value, &value_valid, nullptr)) && (value_valid != grid::AttributeValue::NOT_SET)) {
+			double min_fwi;
+			if (variantToDouble(value, &min_fwi)) {
+				if (fwi < min_fwi) {
+					_cb_exit = -7; /* FWI too low */
+					goto _cb_log;
+				}
+			}
+		}
+
+		if (SUCCEEDED(hr = m_scenario->m_gridEngine->GetAttributeData(m_scenario->m_layerThread, _pt, datetime, WTimeSpan(0), CWFGM_GRID_ATTRIBUTE_BURNINGCONDITION_MIN_ISI, 0, &value, &value_valid, nullptr)) && (value_valid != grid::AttributeValue::NOT_SET)) {
+			double min_isi;
+			if (variantToDouble(value, &min_isi)) {
+				if (isi < min_isi) {
+					_cb_exit = -8; /* ISI too low */
+					goto _cb_log;
+				}
 			}
 		}
 	}
 
-	if (SUCCEEDED(hr = m_scenario->m_gridEngine->GetAttributeData(m_scenario->m_layerThread, _pt, datetime, WTimeSpan(0), CWFGM_GRID_ATTRIBUTE_BURNINGCONDITION_MAX_WS, 0, &value, &value_valid, nullptr)) && (value_valid != grid::AttributeValue::NOT_SET)) {
-		double max_ws;
-		if (variantToDouble(value, &max_ws)) {
-			if (WindSpeed < max_ws) {
-				return false;
-			}
-		}
-	}
+	_cb_exit = 10; /* all checks passed */
 
-	if (SUCCEEDED(hr = m_scenario->m_gridEngine->GetAttributeData(m_scenario->m_layerThread, _pt, datetime, WTimeSpan(0), CWFGM_GRID_ATTRIBUTE_BURNINGCONDITION_MIN_FWI, 0, &value, &value_valid, nullptr)) && (value_valid != grid::AttributeValue::NOT_SET)) {
-		double min_fwi;
-		if (variantToDouble(value, &min_fwi)) {
-			if (fwi < min_fwi) {
-				return false;
-			}
+_cb_log:
+	{
+		static int _cb_yes_log = 0, _cb_no_log = 0;
+		bool result = (_cb_exit > 0);
+		if (result && _cb_yes_log < 5) {
+			_cb_yes_log++;
+			fprintf(stderr, "[CB-YES#%d] exit=%d t=%lld day=%lld start=%lld end=%lld rh=%.6f ws=%.4f fwi=%.4f isi=%.4f\n",
+				_cb_yes_log, _cb_exit,
+				(long long)datetime.GetTotalSeconds(),
+				(long long)dayportion.GetTotalSeconds(),
+				(long long)start.GetTotalSeconds(),
+				(long long)end.GetTotalSeconds(),
+				rh, WindSpeed, fwi, isi);
+			fflush(stderr);
 		}
-	}
-
-	if (SUCCEEDED(hr = m_scenario->m_gridEngine->GetAttributeData(m_scenario->m_layerThread, _pt, datetime, WTimeSpan(0), CWFGM_GRID_ATTRIBUTE_BURNINGCONDITION_MIN_ISI, 0, &value, &value_valid, nullptr)) && (value_valid != grid::AttributeValue::NOT_SET)) {
-		double min_isi;
-		if (variantToDouble(value, &min_isi)) {
-			if (isi < min_isi) {
-				return false;
-			}
+		if (!result && _cb_no_log < 5) {
+			_cb_no_log++;
+			fprintf(stderr, "[CB-NO#%d] exit=%d t=%lld day=%lld start=%lld end=%lld rh=%.6f ws=%.4f fwi=%.4f isi=%.4f\n",
+				_cb_no_log, _cb_exit,
+				(long long)datetime.GetTotalSeconds(),
+				(long long)dayportion.GetTotalSeconds(),
+				(long long)start.GetTotalSeconds(),
+				(long long)end.GetTotalSeconds(),
+				rh, WindSpeed, fwi, isi);
+			fflush(stderr);
 		}
+		return result;
 	}
-
-	return true;
 }
 
 
