@@ -279,9 +279,10 @@ void FirePoint<_type>::Grow(const growVoxelParms<_type> *gvs, ICWFGM_Fuel *fuel)
 
 	/* ── Weather data trace: compare with control's FFMC/dBUI/FWI ── */
 	{ static int _wx_log = 0; if (_wx_log < 5) { _wx_log++;
-	  fprintf(stderr, "[WX#%d] t=%lld FFMC=%.4f dBUI=%.4f FWI=%.4f ISI=%.4f RH=%.4f WS=%.4f\n",
+	  fprintf(stderr, "[WX#%d] t=%lld FFMC=%.4f dBUI=%.4f FWI=%.4f ISI=%.4f RH=%.4f WS=%.4f flags=0x%llx wxvalid=%d\n",
 	    _wx_log, (long long)sts->m_time.GetTotalSeconds(),
-	    ifwi.FFMC, dfwi.dBUI, ifwi.FWI, ifwi.ISI, wx.RH, wx.WindSpeed);
+	    ifwi.FFMC, dfwi.dBUI, ifwi.FWI, ifwi.ISI, wx.RH, wx.WindSpeed,
+	    (unsigned long long)flags, wx_valid ? 1 : 0);
 	  fflush(stderr); } }
 
     #ifdef DEBUG_TEST_SLOPE
