@@ -331,7 +331,7 @@ HRESULT Scenario<_type>::Step() {
 		/* ── Pipeline vertex count trace ── */
 		auto _dump_npts = [&](const char* stage) {
 			static int _pipe_call = 0;
-			if (_pipe_call >= 30) return;  /* first 30 calls only */
+			if (_pipe_call >= 100) return;  /* first 100 calls */
 			ScenarioFire<_type> *_sf = sts->m_fires.LH_Head();
 			int _fi = 0;
 			while (_sf->LN_Succ()) {
