@@ -328,35 +328,54 @@ HRESULT Scenario<_type>::Step() {
 		sts->m_memoryBegin = used;				// should be, all automatically
 #endif
 
-		bool advanced = sts->AdvanceFires();			// this copies all the fires from the previous state, then "grows" them based on
-														// the previous state's statics for each fire point - this has to do the smoothing
-														// that Cordy wants
+		/* ── Pipeline vertex count trace ── */
+		auto _dump_npts = [&](const char* stage) {
+			static int _pipe_call = 0;
+			if (_pipe_call >= 30) return;  /* first 30 calls only */
+			ScenarioFire<_type> *_sf = sts->m_fires.LH_Head();
+			int _fi = 0;
+			while (_sf->LN_Succ()) {
+				FireFront<_type> *_ff = _sf->LH_Head();
+				std::uint32_t _total = 0;
+				int _nff = 0;
+				while (_ff->LN_Succ()) { _total += _ff->NumPoints(); _nff++; _ff = _ff->LN_Succ(); }
+				fprintf(stderr, "[PIPE#%d] %s fire=%d fronts=%d npts=%u\n", _pipe_call, stage, _fi, _nff, _total);
+				_fi++;
+				_sf = _sf->LN_Succ();
+			}
+			_pipe_call++;
+			fflush(stderr);
+		};
+
+		_dump_npts("PRE-ADVANCE");
+		bool advanced = sts->AdvanceFires();
+		_dump_npts("POST-ADVANCE");
 
 		if ((advanced) && ((m_scenario->m_perimeterSpacing != 0.0)))
 			sts->SimplifyFires();
 		else
 			sts->SimplifyFiresNull();
+		_dump_npts("POST-SIMPLIFY");
 
 		if (advanced)
-			sts->TrackFires();				// this pulls back any points due to intersections with fire breaks based on paths
+			sts->TrackFires();
 		else
 			sts->TrackFiresNull();
+		_dump_npts("POST-TRACK");
 
-		sts->UnWindFires(advanced);				// this deals with any loops or knots, and may add or remove from the set of fires
+		sts->UnWindFires(advanced);
+		_dump_npts("POST-UNWIND");
 
-		advanced |= sts->AddIgnitions();			// this adds any new ignitions to the fold, as necessary - it also make sure that
-									// the new ignitions can actually burn and works from there - it also (necessarily)
-									// unwinds them into usable fire fronts (before clipping them against any breaks)
+		advanced |= sts->AddIgnitions();
 
 		if (advanced)
-			sts->UnOverlapFires();				// this deals with fires contacting each other, overlapped areas are given to the
-									// the fire with the larger area from the previous step - new ignitions have no
-									// area from the previous step
+			sts->UnOverlapFires();
 		else
 			sts->UnOverlapFiresNull();
 
 		if (advanced)
-			sts->AddFirePoints();				// this introduces new fire points as we need them, based on m_perimeterResolution
+			sts->AddFirePoints();
+		_dump_npts("POST-ADDPTS");
 
 		sts->StatsFires();					// this calculates FBP values, then Gwyn's equations for full statics on every
 											// (active) fire vertex
