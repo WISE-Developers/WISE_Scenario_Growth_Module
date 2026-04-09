@@ -294,19 +294,53 @@ void FireFront<_type>::trackPointPrevFire(const FirePoint<_type> *actual_fp, Fir
 	XYPolyRefType *node;								// catches up with the tail of another fire) AND then "eat" into the other fire's area that it had already burned in an unreasonable manner.
 	XYPolyNodeType *other_fp;
 
+	/* ── Vertex 506 trace: targeted at the divergent vertex ── */
+	bool _trace506 = false;
+	{
+		double _dx = (double)fp->x - 449.817;
+		double _dy = (double)fp->y - 399.323;
+		if (_dx*_dx + _dy*_dy < 1.0) _trace506 = true;  /* within 1 unit of vertex 506 */
+	}
+
 	sts = Fire()->LN_CalcPred()->TimeStep();
 	if (sts) {
 		sf = sts->m_fires.LH_Head();
+		int _sf_idx = 0;
 		while (sf->LN_Succ()) {
-			if (sf->FastCollisionTest(path, 0.0))
+			bool _fct = sf->FastCollisionTest(path, 0.0);
+			if (_trace506) {
+				fprintf(stderr, "[V506] sf=%d fct=%d from=(%.8f,%.8f) to=(%.8f,%.8f) sf_npts=%u\n",
+					_sf_idx, _fct?1:0,
+					(double)actual_fp->x, (double)actual_fp->y,
+					(double)fp->x, (double)fp->y,
+					sf->NumPoints());
+				fflush(stderr);
+			}
+			if (_fct) {
 				sf->IntersectionSet(path, list, 0, actual_fp);
+				if (_trace506) {
+					fprintf(stderr, "[V506] IntersectionSet returned %d hits\n", (int)list.GetCount());
+					if (list.GetCount()) {
+						auto* _n = list.LH_Head();
+						fprintf(stderr, "[V506] first intersection=(%.8f,%.8f)\n",
+							(double)_n->intersection_().x, (double)_n->intersection_().y);
+					}
+					fflush(stderr);
+				}
+			}
 			while (list.GetCount() > 1)
 				delete list.RemTail();
 			sf = sf->LN_Succ();
+			_sf_idx++;
 		}
 		if (list.GetCount()) {
 			node = list.RemHead();
 			other_fp = node->LN_Ptr();
+			if (_trace506) {
+				fprintf(stderr, "[V506] MOVED to intersection=(%.8f,%.8f)\n",
+					(double)node->intersection_().x, (double)node->intersection_().y);
+				fflush(stderr);
+			}
 			if (svs->use_lock)
 				svs->lock_self.Lock();
 
