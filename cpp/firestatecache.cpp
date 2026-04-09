@@ -1048,6 +1048,8 @@ bool ScenarioCache<_type>::CanBurn(const WTime &datetime, const XYPointType& cen
 			if (variantToDouble(value, &min_fwi)) {
 				if (fwi < min_fwi) {
 					_cb_exit = -7; /* FWI too low */
+					{ static int _ff=0; if(_ff<3){_ff++;
+					  fprintf(stderr,"[CB-FWI-FAIL] fwi=%.6f < min_fwi=%.6f\n",fwi,min_fwi);fflush(stderr);}}
 					goto _cb_log;
 				}
 			}
