@@ -415,9 +415,25 @@ void FirePoint<_type>::Grow(const growVoxelParms<_type> *gvs, ICWFGM_Fuel *fuel)
 		m_fbp_ros_ratio = 1.0;
 	}
 
-	if (!sts->m_scenario->CanBurn(sts->m_time, gvs->centroid, cpt, wx.RH, windSpeed, ifwi.FWI, ifwi.ISI)) {
+	bool _cb = sts->m_scenario->CanBurn(sts->m_time, gvs->centroid, cpt, wx.RH, windSpeed, ifwi.FWI, ifwi.ISI);
+	if (!_cb) {
 		m_ellipse_ros.x = m_ellipse_ros.y = 0.0;
 		m_fbp_ros_ratio = 1.0;
+	}
+
+	/* ── Growth gate trace: log roseq, CanBurn, and final ROS for first N calls ── */
+	{
+		static int _grow_log = 0;
+		if (_grow_log < 30) {
+			_grow_log++;
+			fprintf(stderr, "[GROW#%d] t=%lld roseq=%.8g canburn=%d eros=(%.8g,%.8g) minROS=%.8g\n",
+				_grow_log,
+				(long long)sts->m_time.GetTotalSeconds(),
+				roseq, _cb ? 1 : 0,
+				(double)m_ellipse_ros.x, (double)m_ellipse_ros.y,
+				sts->m_scenario->m_scenario->m_minimumROS);
+			fflush(stderr);
+		}
 	}
 	// collect the values of interest for us to store for this point
 }
