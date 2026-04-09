@@ -354,9 +354,43 @@ HRESULT Scenario<_type>::Step() {
 		};
 		_pipe_step++;
 
+		/* ── Per-step vertex coordinate dump (fires once per stage) ── */
+		static bool _dumped_post_adv = false, _dumped_post_trk = false;
+		auto _dump_coords = [&](const char* tag, const char* path, bool& flag) {
+			if (flag) return;
+			ScenarioFire<_type>* _sf = sts->m_fires.LH_Head();
+			while (_sf->LN_Succ()) {
+				FireFront<_type>* _ff = _sf->LH_Head();
+				if (_ff && _ff->LN_Succ()) {
+					std::uint32_t np = _ff->NumPoints();
+					if (np >= 860 && np <= 940) {
+						flag = true;
+						FILE* vf = fopen(path, "w");
+						if (vf) {
+							int vi = 0;
+							auto* n = _ff->LH_Head();
+							while (n->LN_Succ()) {
+								fprintf(vf, "%d %.17g %.17g\n", vi,
+									(double)static_cast<FirePoint<_type>*>(n)->x,
+									(double)static_cast<FirePoint<_type>*>(n)->y);
+								vi++;
+								n = n->LN_Succ();
+							}
+							fclose(vf);
+							fprintf(stderr, "[VTXDUMP] %s wrote %d verts to %s\n", tag, vi, path);
+							fflush(stderr);
+						}
+						return;
+					}
+				}
+				_sf = _sf->LN_Succ();
+			}
+		};
+
 		_dump_npts("PRE-ADVANCE");
 		bool advanced = sts->AdvanceFires();
 		_dump_npts("POST-ADVANCE");
+		_dump_coords("POST-ADVANCE", "/tmp/post_advance_verts.txt", _dumped_post_adv);
 
 		if ((advanced) && ((m_scenario->m_perimeterSpacing != 0.0)))
 			sts->SimplifyFires();
@@ -369,6 +403,7 @@ HRESULT Scenario<_type>::Step() {
 		else
 			sts->TrackFiresNull();
 		_dump_npts("POST-TRACK");
+		_dump_coords("POST-TRACK", "/tmp/post_track_verts.txt", _dumped_post_trk);
 
 		sts->UnWindFires(advanced);
 		_dump_npts("POST-UNWIND");
