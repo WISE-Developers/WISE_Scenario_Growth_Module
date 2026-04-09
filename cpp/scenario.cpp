@@ -328,10 +328,12 @@ HRESULT Scenario<_type>::Step() {
 		sts->m_memoryBegin = used;				// should be, all automatically
 #endif
 
-		/* ── Pipeline vertex count trace ── */
+		/* ── Pipeline vertex count trace (per-fire, with transition detection) ── */
+		static int _pipe_step = 0;  /* timestep counter */
+		static std::uint32_t _prev_npts[16] = {};  /* previous npts per fire index */
 		auto _dump_npts = [&](const char* stage) {
 			static int _pipe_call = 0;
-			if (_pipe_call >= 100) return;  /* first 100 calls */
+			if (_pipe_call >= 1000) return;
 			ScenarioFire<_type> *_sf = sts->m_fires.LH_Head();
 			int _fi = 0;
 			while (_sf->LN_Succ()) {
@@ -339,13 +341,18 @@ HRESULT Scenario<_type>::Step() {
 				std::uint32_t _total = 0;
 				int _nff = 0;
 				while (_ff->LN_Succ()) { _total += _ff->NumPoints(); _nff++; _ff = _ff->LN_Succ(); }
-				fprintf(stderr, "[PIPE#%d] %s fire=%d fronts=%d npts=%u\n", _pipe_call, stage, _fi, _nff, _total);
+				/* Always log for all fires — delta detection highlights changes */
+				int _delta = (int)_total - (int)_prev_npts[_fi < 16 ? _fi : 0];
+				fprintf(stderr, "[PIPE#%d step=%d] %s fire=%d fronts=%d npts=%u delta=%+d\n",
+					_pipe_call, _pipe_step, stage, _fi, _nff, _total, _delta);
+				if (_fi < 16) _prev_npts[_fi] = _total;
 				_fi++;
 				_sf = _sf->LN_Succ();
 			}
 			_pipe_call++;
 			fflush(stderr);
 		};
+		_pipe_step++;
 
 		_dump_npts("PRE-ADVANCE");
 		bool advanced = sts->AdvanceFires();
@@ -367,11 +374,13 @@ HRESULT Scenario<_type>::Step() {
 		_dump_npts("POST-UNWIND");
 
 		advanced |= sts->AddIgnitions();
+		_dump_npts("POST-IGNITIONS");
 
 		if (advanced)
 			sts->UnOverlapFires();
 		else
 			sts->UnOverlapFiresNull();
+		_dump_npts("POST-UNOVERLAP");
 
 		if (advanced)
 			sts->AddFirePoints();
