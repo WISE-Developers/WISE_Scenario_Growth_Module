@@ -1070,28 +1070,29 @@ bool ScenarioCache<_type>::CanBurn(const WTime &datetime, const XYPointType& cen
 
 _cb_log:
 	{
-		static int _cb_yes_log = 0, _cb_no_log = 0;
+		/* Per-scenario logging: track 3 scenario pointers, log 5 per scenario */
+		void* _sid = (void*)this;
+		static void* _sid_log[3] = {};
+		static int _cb_yes_sc[3] = {}, _cb_no_sc[3] = {};
+		int _si = -1;
+		for (int i=0;i<3;i++) { if(_sid_log[i]==_sid){_si=i;break;} if(!_sid_log[i]){_sid_log[i]=_sid;_si=i;break;} }
 		bool result = (_cb_exit > 0);
-		if (result && _cb_yes_log < 5) {
-			_cb_yes_log++;
-			fprintf(stderr, "[CB-YES#%d] exit=%d t=%lld day=%lld start=%lld end=%lld rh=%.6f ws=%.4f fwi=%.4f isi=%.4f\n",
-				_cb_yes_log, _cb_exit,
+		if (_si >= 0 && result && _cb_yes_sc[_si] < 3) {
+			_cb_yes_sc[_si]++;
+			fprintf(stderr, "[CB-YES sc=%p] exit=%d t=%lld day=%lld rh=%.6f fwi=%.4f isi=%.4f\n",
+				_sid, _cb_exit,
 				(long long)datetime.GetTotalSeconds(),
 				(long long)dayportion.GetTotalSeconds(),
-				(long long)start.GetTotalSeconds(),
-				(long long)end.GetTotalSeconds(),
-				rh, WindSpeed, fwi, isi);
+				rh, fwi, isi);
 			fflush(stderr);
 		}
-		if (!result && _cb_no_log < 5) {
-			_cb_no_log++;
-			fprintf(stderr, "[CB-NO#%d] exit=%d t=%lld day=%lld start=%lld end=%lld rh=%.6f ws=%.4f fwi=%.4f isi=%.4f\n",
-				_cb_no_log, _cb_exit,
+		if (_si >= 0 && !result && _cb_no_sc[_si] < 3) {
+			_cb_no_sc[_si]++;
+			fprintf(stderr, "[CB-NO sc=%p] exit=%d t=%lld day=%lld rh=%.6f fwi=%.4f isi=%.4f\n",
+				_sid, _cb_exit,
 				(long long)datetime.GetTotalSeconds(),
 				(long long)dayportion.GetTotalSeconds(),
-				(long long)start.GetTotalSeconds(),
-				(long long)end.GetTotalSeconds(),
-				rh, WindSpeed, fwi, isi);
+				rh, fwi, isi);
 			fflush(stderr);
 		}
 		return result;

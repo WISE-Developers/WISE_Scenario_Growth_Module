@@ -343,8 +343,8 @@ HRESULT Scenario<_type>::Step() {
 				while (_ff->LN_Succ()) { _total += _ff->NumPoints(); _nff++; _ff = _ff->LN_Succ(); }
 				/* Always log for all fires — delta detection highlights changes */
 				int _delta = (int)_total - (int)_prev_npts[_fi < 16 ? _fi : 0];
-				fprintf(stderr, "[PIPE#%d step=%d] %s fire=%d fronts=%d npts=%u delta=%+d\n",
-					_pipe_call, _pipe_step, stage, _fi, _nff, _total, _delta);
+				fprintf(stderr, "[PIPE#%d step=%d sc=%p] %s fire=%d fronts=%d npts=%u delta=%+d\n",
+					_pipe_call, _pipe_step, (void*)ScenarioCache<_type>::m_scenario, stage, _fi, _nff, _total, _delta);
 				if (_fi < 16) _prev_npts[_fi] = _total;
 				_fi++;
 				_sf = _sf->LN_Succ();
@@ -354,8 +354,13 @@ HRESULT Scenario<_type>::Step() {
 		};
 		_pipe_step++;
 
-		/* ── Per-step vertex coordinate dump (fires once per stage) ── */
-		static bool _dumped_post_adv = false, _dumped_post_trk = false;
+		/* ── Per-step vertex coordinate dump with scenario ID ── */
+		void* _sc_ptr = (void*)ScenarioCache<_type>::m_scenario;
+		/* Per-scenario dump flags: index by scenario pointer */
+		static void* _dsc_id[3] = {};
+		static bool _dsc_adv[3] = {}, _dsc_trk[3] = {};
+		int _dsc_i = -1;
+		for(int i=0;i<3;i++){if(_dsc_id[i]==_sc_ptr){_dsc_i=i;break;}if(!_dsc_id[i]){_dsc_id[i]=_sc_ptr;_dsc_i=i;break;}}
 		auto _dump_coords = [&](const char* tag, const char* path, bool& flag) {
 			if (flag) return;
 			ScenarioFire<_type>* _sf = sts->m_fires.LH_Head();
@@ -377,7 +382,7 @@ HRESULT Scenario<_type>::Step() {
 								n = n->LN_Succ();
 							}
 							fclose(vf);
-							fprintf(stderr, "[VTXDUMP] %s wrote %d verts to %s\n", tag, vi, path);
+							fprintf(stderr, "[VTXDUMP sc=%p] %s wrote %d verts to %s\n", _sc_ptr, tag, vi, path);
 							fflush(stderr);
 						}
 						return;
@@ -390,7 +395,7 @@ HRESULT Scenario<_type>::Step() {
 		_dump_npts("PRE-ADVANCE");
 		bool advanced = sts->AdvanceFires();
 		_dump_npts("POST-ADVANCE");
-		_dump_coords("POST-ADVANCE", "/tmp/post_advance_verts.txt", _dumped_post_adv);
+		if (_dsc_i>=0) _dump_coords("POST-ADVANCE", "/tmp/post_advance_verts.txt", _dsc_adv[_dsc_i]);
 
 		if ((advanced) && ((m_scenario->m_perimeterSpacing != 0.0)))
 			sts->SimplifyFires();
@@ -403,7 +408,7 @@ HRESULT Scenario<_type>::Step() {
 		else
 			sts->TrackFiresNull();
 		_dump_npts("POST-TRACK");
-		_dump_coords("POST-TRACK", "/tmp/post_track_verts.txt", _dumped_post_trk);
+		if (_dsc_i>=0) _dump_coords("POST-TRACK", "/tmp/post_track_verts.txt", _dsc_trk[_dsc_i]);
 
 		sts->UnWindFires(advanced);
 		_dump_npts("POST-UNWIND");

@@ -277,13 +277,18 @@ void FirePoint<_type>::Grow(const growVoxelParms<_type> *gvs, ICWFGM_Fuel *fuel)
 			    | (1ull << CWFGM_SCENARIO_OPTION_WEATHER_INTERPOLATE_CALCFWI) | (1ull << CWFGM_SCENARIO_OPTION_WEATHER_INTERPOLATE_HISTORY)),
 		    &wx, &ifwi, &dfwi, &wx_valid, nullptr);
 
-	/* ── Weather data trace: compare with control's FFMC/dBUI/FWI ── */
-	{ static int _wx_log = 0; if (_wx_log < 5) { _wx_log++;
-	  fprintf(stderr, "[WX#%d] t=%lld FFMC=%.4f dBUI=%.4f FWI=%.4f ISI=%.4f RH=%.4f WS=%.4f flags=0x%llx wxvalid=%d\n",
-	    _wx_log, (long long)sts->m_time.GetTotalSeconds(),
-	    ifwi.FFMC, dfwi.dBUI, ifwi.FWI, ifwi.ISI, wx.RH, wx.WindSpeed,
-	    (unsigned long long)flags, wx_valid ? 1 : 0);
-	  fflush(stderr); } }
+	/* ── Weather data trace with scenario ID ── */
+	{ void* _sid = (void*)sts->m_scenario;
+	  static void* _sid_log[3] = {};
+	  static int _wx_per_sc[3] = {};
+	  int _si = -1;
+	  for (int i=0;i<3;i++) { if(_sid_log[i]==_sid){_si=i;break;} if(!_sid_log[i]){_sid_log[i]=_sid;_si=i;break;} }
+	  if (_si >= 0 && _wx_per_sc[_si] < 3) { _wx_per_sc[_si]++;
+	    fprintf(stderr, "[WX sc=%p:#%d] t=%lld FFMC=%.4f dBUI=%.4f FWI=%.4f ISI=%.4f RH=%.4f WS=%.4f flags=0x%llx\n",
+	      _sid, _wx_per_sc[_si], (long long)sts->m_time.GetTotalSeconds(),
+	      ifwi.FFMC, dfwi.dBUI, ifwi.FWI, ifwi.ISI, wx.RH, wx.WindSpeed,
+	      (unsigned long long)flags);
+	    fflush(stderr); } }
 
     #ifdef DEBUG_TEST_SLOPE
 	wx.WindDirection = 0.0;
@@ -429,36 +434,37 @@ void FirePoint<_type>::Grow(const growVoxelParms<_type> *gvs, ICWFGM_Fuel *fuel)
 		m_fbp_ros_ratio = 1.0;
 	}
 
-	/* ── Growth gate trace: log transitions and non-zero spread ── */
+	/* ── Growth gate trace with scenario ID ── */
 	{
-		static int _grow_total = 0;
-		static int _grow_burn = 0;
-		static int _grow_nobr = 0;
-		static long long _last_t = 0;
-		_grow_total++;
-		long long t = (long long)sts->m_time.GetTotalSeconds();
-		/* Log timestep transitions */
-		if (t != _last_t) {
-			if (_last_t != 0)
-				fprintf(stderr, "[GROW-STEP] t=%lld total=%d canburn_yes=%d canburn_no=%d\n",
-					_last_t, _grow_total-1, _grow_burn, _grow_nobr);
-			_last_t = t;
-			_grow_burn = 0;
-			_grow_nobr = 0;
-		}
-		if (_cb) {
-			_grow_burn++;
-			/* Log first 10 per-vertex growth-allowed events */
-			static int _grow_yes_log = 0;
-			if (_grow_yes_log < 10) {
-				_grow_yes_log++;
-				fprintf(stderr, "[GROW-YES#%d] t=%lld roseq=%.8g eros=(%.8g,%.8g)\n",
-					_grow_yes_log, t, roseq,
-					(double)m_ellipse_ros.x, (double)m_ellipse_ros.y);
-				fflush(stderr);
+		void* _sid = (void*)sts->m_scenario;
+		/* Per-scenario counters: [0..2] for up to 3 scenarios */
+		static void* _gs_id[3] = {};
+		static int _gs_burn[3]={}, _gs_nobr[3]={}, _gs_total[3]={};
+		static long long _gs_last_t[3] = {};
+		int _si = -1;
+		for(int i=0;i<3;i++){if(_gs_id[i]==_sid){_si=i;break;}if(!_gs_id[i]){_gs_id[i]=_sid;_si=i;break;}}
+		if (_si >= 0) {
+			_gs_total[_si]++;
+			long long t = (long long)sts->m_time.GetTotalSeconds();
+			if (t != _gs_last_t[_si]) {
+				if (_gs_last_t[_si] != 0)
+					fprintf(stderr, "[GROW-STEP sc=%p] t=%lld total=%d yes=%d no=%d\n",
+						_sid, _gs_last_t[_si], _gs_total[_si]-1, _gs_burn[_si], _gs_nobr[_si]);
+				_gs_last_t[_si] = t;
+				_gs_burn[_si] = 0;
+				_gs_nobr[_si] = 0;
 			}
+			if (_cb) {
+				_gs_burn[_si]++;
+				static int _gy_sc[3] = {};
+				if (_gy_sc[_si] < 5) { _gy_sc[_si]++;
+					fprintf(stderr, "[GROW-YES sc=%p] t=%lld roseq=%.8g eros=(%.8g,%.8g)\n",
+						_sid, t, roseq, (double)m_ellipse_ros.x, (double)m_ellipse_ros.y);
+					fflush(stderr);
+				}
 		} else {
-			_grow_nobr++;
+			_gs_nobr[_si]++;
+		}
 		}
 	}
 	// collect the values of interest for us to store for this point
