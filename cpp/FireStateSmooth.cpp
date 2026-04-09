@@ -63,6 +63,16 @@ void FireFront<_type>::AddPoints() {
 		perimeterResolution = Fire()->TimeStep()->m_scenario->m_scenario->perimeterResolution(0.0);
 	Fire()->TimeStep()->m_scenario->gridToInternal1D(perimeterResolution);
 
+	{
+		static int _ap_call = 0;
+		if (_ap_call < 10) {
+			fprintf(stderr, "[AP#%d] perimRes=%.15e npts=%u fronts=%p\n",
+				_ap_call, (double)perimeterResolution, NumPoints(), (void*)this);
+			fflush(stderr);
+		}
+		_ap_call++;
+	}
+
 	while (next->LN_Succ()) {
 		if ((prev->m_status == FP_FLAG_NORMAL) || (curr->m_status == FP_FLAG_NORMAL) || (next->m_status == FP_FLAG_NORMAL)) {
 
@@ -290,6 +300,18 @@ void FireFront<_type>::equiDistantPoints(const FirePoint<_type> *start, const Fi
 
 	_type steps = ceil(dist_factor);
 	std::uint32_t cnt_next, num = (std::uint32_t)steps;
+
+	{
+		static int _eq_call = 0;
+		if (_eq_call < 50) {
+			fprintf(stderr, "[EQ#%d] poly=%p df=%.6f steps=%u start=(%.6f,%.6f) end=(%.6f,%.6f)\n",
+				_eq_call, (void*)this, (double)dist_factor, num,
+				(double)start->x, (double)start->y, (double)end->x, (double)end->y);
+			fflush(stderr);
+		}
+		_eq_call++;
+	}
+
 	XYPointType delta = (*end - *start);
 	delta /= steps;
 	XYPointType loc = *start + delta;
