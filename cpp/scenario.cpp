@@ -1420,6 +1420,21 @@ HRESULT Scenario<_type>::Export(const CCWFGM_Ignition *ignition, WTime *start_ti
 	if (!(m_scenario->m_optionFlags & (1ull << CWFGM_SCENARIO_OPTION_FALSE_SCALING)))
 		full_set.SetCacheScale(resolution());
 	full_set.m_rules = &rules;
+	/* Diagnostic: count displayable timesteps */
+	{
+		int _total = 0, _disp = 0, _inrange = 0;
+		for (auto* _s = m_timeSteps.LH_Head(); _s->LN_Succ(); _s = _s->LN_Succ()) {
+			_total++;
+			if (_s->m_displayable) _disp++;
+			if (_s->m_displayable && _s->m_time >= (*start_time) && _s->m_time <= requestedEndTime) _inrange++;
+		}
+		fprintf(stderr, "[EXPORT-DIAG] total_steps=%d displayable=%d in_range=%d "
+			"start=%lld end=%lld\n",
+			_total, _disp, _inrange,
+			(long long)start_time->GetTotalSeconds(),
+			(long long)requestedEndTime.GetTotalSeconds());
+		fflush(stderr);
+	}
 	bool first = true;
 	for (sts = m_timeSteps.LH_Head(); sts->LN_Succ(); sts = sts->LN_Succ()) {
 		if (_sts) {
