@@ -441,21 +441,30 @@ void FirePoint<_type>::Grow(const growVoxelParms<_type> *gvs, ICWFGM_Fuel *fuel)
 		static void* _gs_id[3] = {};
 		static int _gs_burn[3]={}, _gs_nobr[3]={}, _gs_total[3]={};
 		static long long _gs_last_t[3] = {};
+		static double _gs_ros_sum[3] = {};
+		static double _gs_ros_max[3] = {};
 		int _si = -1;
 		for(int i=0;i<3;i++){if(_gs_id[i]==_sid){_si=i;break;}if(!_gs_id[i]){_gs_id[i]=_sid;_si=i;break;}}
 		if (_si >= 0) {
 			_gs_total[_si]++;
 			long long t = (long long)sts->m_time.GetTotalSeconds();
 			if (t != _gs_last_t[_si]) {
-				if (_gs_last_t[_si] != 0)
-					fprintf(stderr, "[GROW-STEP sc=%p] t=%lld total=%d yes=%d no=%d\n",
-						_sid, _gs_last_t[_si], _gs_total[_si]-1, _gs_burn[_si], _gs_nobr[_si]);
+				if (_gs_last_t[_si] != 0) {
+					double avg_ros = _gs_burn[_si] > 0 ? _gs_ros_sum[_si]/_gs_burn[_si] : 0;
+					fprintf(stderr, "[GROW-STEP sc=%p] t=%lld total=%d yes=%d no=%d avg_ros=%.4f max_ros=%.4f\n",
+						_sid, _gs_last_t[_si], _gs_total[_si]-1, _gs_burn[_si], _gs_nobr[_si], avg_ros, _gs_ros_max[_si]);
+				}
 				_gs_last_t[_si] = t;
 				_gs_burn[_si] = 0;
 				_gs_nobr[_si] = 0;
+				_gs_ros_sum[_si] = 0;
+				_gs_ros_max[_si] = 0;
 			}
 			if (_cb) {
 				_gs_burn[_si]++;
+				double _ros_mag = sqrt((double)(m_ellipse_ros.x*m_ellipse_ros.x + m_ellipse_ros.y*m_ellipse_ros.y));
+				_gs_ros_sum[_si] += _ros_mag;
+				if (_ros_mag > _gs_ros_max[_si]) _gs_ros_max[_si] = _ros_mag;
 				static int _gy_sc[3] = {};
 				if (_gy_sc[_si] < 5) { _gy_sc[_si]++;
 					fprintf(stderr, "[GROW-YES sc=%p] t=%lld roseq=%.8g eros=(%.8g,%.8g)\n",
