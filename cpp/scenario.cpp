@@ -1550,7 +1550,11 @@ HRESULT Scenario<_type>::Export(const CCWFGM_Ignition *ignition, WTime *start_ti
 			fromInternal1D(m_origDistance);
 
 			if (flags & SCENARIO_EXPORT_COMBINE_SET) {
+				int _pre_cnt = 0; for (auto* _p = set.LH_Head(); _p->LN_Succ(); _p = _p->LN_Succ()) _pre_cnt++;
 				set.Unwind(false, ScenarioCache<_type>::m_multithread ? true : false, nullptr, nullptr);
+				int _post_cnt = 0; for (auto* _p = set.LH_Head(); _p->LN_Succ(); _p = _p->LN_Succ()) _post_cnt++;
+				fprintf(stderr, "[EXPORT-UW] pre=%d post=%d time=%lld\n", _pre_cnt, _post_cnt, (long long)sts->m_time.GetTotalSeconds());
+				fflush(stderr);
 			}
 
 			if (m_scenario->m_optionFlags & (1ull << CWFGM_SCENARIO_OPTION_FALSE_SCALING))
