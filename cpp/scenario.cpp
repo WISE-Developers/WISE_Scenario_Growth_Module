@@ -1549,6 +1549,13 @@ HRESULT Scenario<_type>::Export(const CCWFGM_Ignition *ignition, WTime *start_ti
 			fromInternal2D(m_origArea);
 			fromInternal1D(m_origDistance);
 
+			{
+				int _fc = 0; auto* _ss = sts->m_fires.LH_Head();
+				while (_ss->LN_Succ()) { _fc++; _ss = _ss->LN_Succ(); }
+				fprintf(stderr, "[EXPORT-STS] sts=%p t=%lld fires=%d\n",
+					(void*)sts, (long long)sts->m_time.GetTotalSeconds(), _fc);
+				fflush(stderr);
+			}
 			if (flags & SCENARIO_EXPORT_COMBINE_SET) {
 				int _pre_cnt = 0; for (auto* _p = set.LH_Head(); _p->LN_Succ(); _p = _p->LN_Succ()) _pre_cnt++;
 				set.Unwind(false, ScenarioCache<_type>::m_multithread ? true : false, nullptr, nullptr);

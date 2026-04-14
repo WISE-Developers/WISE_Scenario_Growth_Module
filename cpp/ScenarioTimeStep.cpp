@@ -610,8 +610,8 @@ void ScenarioTimeStep<_type>::advanceFire(ActiveFire<_type> *af) {
 	sf_new->InitArea(sf->Area());
 
 	if (m_displayable) {
-		fprintf(stderr, "[ADV-FIRE] disp=1 t=%lld sf=%p sf_polys=%d copied=%d ptr_upd=%d fires_cnt=%d\n",
-			(long long)m_time.GetTotalSeconds(), (void*)sf, (int)sf->NumPolys(),
+		fprintf(stderr, "[ADV-FIRE] disp=1 t=%lld sts=%p sf=%p sf_polys=%d copied=%d ptr_upd=%d fires_cnt=%d\n",
+			(long long)m_time.GetTotalSeconds(), (void*)this, (void*)sf, (int)sf->NumPolys(),
 			fronts_copied, (int)ptr_updated, (int)m_fires.GetCount());
 		fflush(stderr);
 	}
