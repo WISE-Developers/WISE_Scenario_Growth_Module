@@ -577,6 +577,7 @@ void ScenarioTimeStep<_type>::advanceFire(ActiveFire<_type> *af) {
 	ScenarioFire<_type> *sf = af->LN_Ptr();
 	ScenarioFire<_type> *sf_new = new ScenarioFire<_type>(this, sf->Ignition(), sf);
 	sf_new->m_activeFire = sf->m_activeFire;
+	bool ptr_updated = false;
 	if ((m_evented && (!m_ignitioned)) ||
 		(af->m_endTime == m_time) ||
 		((!m_displayable) && (!(m_scenario->m_scenario->m_optionFlags & (1ull << CWFGM_SCENARIO_OPTION_INDEPENDENT_TIMESTEPS))))) {
@@ -584,12 +585,14 @@ void ScenarioTimeStep<_type>::advanceFire(ActiveFire<_type> *af) {
 		sf_new->m_activeFire->LN_Ptr(sf_new);	// only update the pointer to the current image of this fire if we can actually calculate from it
 		sf_new->BoundingBox(sf_new->m_activeFire->m_boundingBox);
 		XYRectangleType bbox(sf->m_activeFire->m_boundingBox);
+		ptr_updated = true;
 	}
 
 #ifdef DEBUG
 	weak_assert(sf->NumPolys());
 #endif
 
+	int fronts_copied = 0;
 	FireFront<_type> *ff = sf->LH_Head();
 	while (ff->LN_Succ()) {						// this copies the fires from the previous state to this one, to advance them here
 		weak_assert(ff->Fire() == sf);
@@ -599,11 +602,19 @@ void ScenarioTimeStep<_type>::advanceFire(ActiveFire<_type> *af) {
 			if (!(m_scenario->m_scenario->m_optionFlags & (1ull << CWFGM_SCENARIO_OPTION_FALSE_SCALING)))
 				new_ff->SetCacheScale(sf_new->GetCacheScale());
 			sf_new->AddPoly(new_ff);
+			fronts_copied++;
 		}
 		ff = ff->LN_Succ();
 	}
 	m_fires.AddTail(sf_new);
 	sf_new->InitArea(sf->Area());
+
+	if (m_displayable) {
+		fprintf(stderr, "[ADV-FIRE] disp=1 t=%lld sf=%p sf_polys=%d copied=%d ptr_upd=%d fires_cnt=%d\n",
+			(long long)m_time.GetTotalSeconds(), (void*)sf, (int)sf->NumPolys(),
+			fronts_copied, (int)ptr_updated, (int)m_fires.GetCount());
+		fflush(stderr);
+	}
 }
 
 
