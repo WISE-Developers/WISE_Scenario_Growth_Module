@@ -1553,9 +1553,15 @@ HRESULT Scenario<_type>::Export(const CCWFGM_Ignition *ignition, WTime *start_ti
 				int _fc = 0; auto* _ss = sts->m_fires.LH_Head();
 				while (_ss->LN_Succ()) {
 					int _ffcnt = 0; auto* _ff = _ss->LH_Head();
-					while (_ff->LN_Succ()) { _ffcnt++; _ff = _ff->LN_Succ(); }
-					fprintf(stderr, "[EXPORT-STS] sts=%p t=%lld fire=%d fronts=%d npts=%u\n",
-						(void*)sts, (long long)sts->m_time.GetTotalSeconds(), _fc, _ffcnt, _ss->NumPoints());
+					while (_ff->LN_Succ()) {
+						_ffcnt++;
+						bool _skip = ((flags & SCENARIO_EXPORT_SUBSET_EXTERIOR) && (_ff->m_publicFlags & XY_PolyLL_BaseTempl<_type>::Flags::INTERIOR_SPECIFIED));
+						fprintf(stderr, "[EXPORT-FF] t=%lld ff=%p npts=%u interior=%d subset_ext=%d skip=%d\n",
+							(long long)sts->m_time.GetTotalSeconds(), (void*)_ff, _ff->NumPoints(),
+							(int)!!(_ff->m_publicFlags & XY_PolyLL_BaseTempl<_type>::Flags::INTERIOR_SPECIFIED),
+							(int)!!(flags & SCENARIO_EXPORT_SUBSET_EXTERIOR), (int)_skip);
+						_ff = _ff->LN_Succ();
+					}
 					_fc++; _ss = _ss->LN_Succ();
 				}
 				if (!_fc)
