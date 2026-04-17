@@ -93,19 +93,32 @@ void FireFront<_type>::AddPoints() {
 					dist_factor = dist / perimeterResolution;
 				}
 
-				while ((cnt_prev < 2) && (dist_factor > 0.001) && (sin_angle < dist_factor)) {					// logic keeps points dropping to under 1/1000'th of a grid cell.  The new logic around decimate forces a
-					XYPointType loc = last_pt->PointBetween(*curr);				// hard minimum based on the user preferences - which typically won't be met (because of the existing logic)
-																				// but may be important for very small grid resolutions
+				while ((cnt_prev < 2) && (dist_factor > 0.001) && (sin_angle < dist_factor)) {
+					XYPointType loc = last_pt->PointBetween(*curr);
 
 					new_pt = new FirePoint<_type>(loc);
 					InsertPoint(new_pt, (FirePoint<_type>*)last_pt);
+					{
+						static int _ip_log = 0;
+						if (_ip_log < 200) {
+							fprintf(stderr, "[ADDPT#%d] side=PREV new=(%.15e,%.15e) "
+								"ref1=(%.15e,%.15e) ref2=(%.15e,%.15e) "
+								"dist=%.15e df=%.6f sa=%.6f\n",
+								_ip_log, (double)new_pt->x, (double)new_pt->y,
+								(double)last_pt->x, (double)last_pt->y,
+								(double)curr->x, (double)curr->y,
+								(double)dist, (double)dist_factor, (double)sin_angle);
+							fflush(stderr);
+							_ip_log++;
+						}
+					}
 					last_pt = new_pt;
 					dist_factor *= 0.5;
 					cnt_prev++;
 				}
 			}
 
-			cnt_prev = 0;						// this var is re-used to record that we've used the (if dist_factor > 2.0) part of the code below
+			cnt_prev = 0;
 			cnt_next = 0;
 			if ((curr->m_status == FP_FLAG_NORMAL) || (next->m_status == FP_FLAG_NORMAL)) {
 				dist = curr->DistanceTo(*next);
@@ -120,12 +133,25 @@ void FireFront<_type>::AddPoints() {
 				} else
 					last_pt = next;
 
-				while ((cnt_next < 3) && (dist_factor > 0.001) && (sin_angle < dist_factor)) {					// logic keeps points dropping to under 1/1000'th of a grid cell.  The new logic around decimate forces a
-					XYPointType loc = last_pt->PointBetween(*curr);				// hard minimum based on the user preferences - which typically won't be met (because of the existing logic)
-																				// but may be important for very small grid resolutions
+				while ((cnt_next < 3) && (dist_factor > 0.001) && (sin_angle < dist_factor)) {
+					XYPointType loc = last_pt->PointBetween(*curr);
 
 					new_pt = new FirePoint<_type>(loc);
 					InsertPoint(new_pt, (FirePoint<_type>*)curr);
+					{
+						static int _ip_log2 = 0;
+						if (_ip_log2 < 200) {
+							fprintf(stderr, "[ADDPT#%d] side=NEXT new=(%.15e,%.15e) "
+								"ref1=(%.15e,%.15e) ref2=(%.15e,%.15e) "
+								"dist=%.15e df=%.6f sa=%.6f\n",
+								200 + _ip_log2, (double)new_pt->x, (double)new_pt->y,
+								(double)last_pt->x, (double)last_pt->y,
+								(double)curr->x, (double)curr->y,
+								(double)dist, (double)dist_factor, (double)sin_angle);
+							fflush(stderr);
+							_ip_log2++;
+						}
+					}
 					last_pt = new_pt;
 					dist_factor *= 0.5;
 					cnt_next++;
